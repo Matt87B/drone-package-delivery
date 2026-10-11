@@ -22,7 +22,7 @@
 *.la
 *.lo
 
-# Shared objects (OS-specific dynamic libraries)
+# Shared objects (inc. Windows DLLs)
 *.dll
 *.so
 *.so.*
@@ -41,10 +41,15 @@
 *.su
 *.idb
 *.pdb
-*.dwo
 
-# IDEs and Text Editors
-.vscode/
-.idea/
-*.swp
-*~
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# debug information files
+*.dwo

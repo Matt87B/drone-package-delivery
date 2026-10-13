@@ -9,11 +9,36 @@ static float housingWidth = 4.0f;
 static float housingLength = 6.0f;
 static float housingDepth = 3.0f;
 
-// Angles
-static float droneAngleDeg = 0.0f;
-
 // Colours
-static Color droneHousingColor = Color{ 40, 120,  40, 255 };
+static Color housingColor = Color{ 40, 120,  40, 255 };
+static Color chassisColor = Color{ 30, 100, 70, 255 };
+
+// Angles
+Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
+
+// Dynamic positions
+Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
+Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 0.0f };
+
+typedef struct DronePart {
+    Vector3 position; // Position relative to parent position
+    Vector3 rotation; // Pitch, Yaw, Roll
+    Vector3 scale;
+
+    Color color;
+} DronePart;
+
+typedef struct Drone {
+    Vector3 position; // World position of chassis
+    Vector3 rotation; // World rotation of chassis
+
+    DronePart chassis;
+    DronePart housing;
+    //DronePart propellers[4];
+} Drone;
 
 
 // Matrix transformation helpers
@@ -109,6 +134,15 @@ static Matrix MatMul(Matrix A, Matrix B) {
     return M;
 }
 
+// Rotate about all three axes
+static Matrix MatRotation(float rx, float ry, float rz) {
+    Matrix matX = MatRotationX(rx);
+    Matrix matY = MatRotationY(ry);
+    Matrix matZ = MatRotationZ(rz);
+
+    return MatMul(MatMul(matX, matY), matZ);
+}
+
 // Wrappers for matrix operations
 static Matrix Translate(Vector3 v) {
     return MatTranslation(v.x, v.y, v.z);
@@ -118,25 +152,23 @@ static Matrix Scale(Vector3 v) {
     return MatScale(v.x, v.y, v.z);
 }
 
-static Matrix Rotation(int axis, float degrees) {
-    float a = degrees * DEG2RAD;
-    return axis == 0 ? MatRotationX(a) : axis == 1 ? MatRotationY(a) : MatRotationZ(a);
+static Matrix Rotation(Vector3 v) {
+    return MatRotation(v.x, v.y, v.z);
 }
 
 // Matrix translate rotate scale
-static Matrix TRS(const Vector3& t, int axis, float angleRad, const Vector3& s) {
+static Matrix TRS(const Vector3& t, const Vector3& r, const Vector3& s) {
     Matrix T = Translate(t);
-    Matrix R = Rotation(axis, angleRad * RAD2DEG);
+    Matrix R = Rotation(r);
     Matrix S = Scale(s);
     return MatrixMultiply(MatrixMultiply(S, R), T);
 }
 
-// Hierarchical matrix operation
+// Assign a child matrix to a world
 static Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal) {
     return MatrixMultiply(childLocal, parentWorld);
 }
 
-// Draw Axes
 static void DrawAxes(float len) {
     DrawLine3D({0, 0, 0}, {len, 0, 0}, RED);
     DrawLine3D({0, 0, 0}, {0, len, 0}, GREEN);
@@ -144,34 +176,40 @@ static void DrawAxes(float len) {
     DrawSphere({0, 0, 0}, 0.09f, YELLOW);
 }
 
+// Transform a vector in accordance with a given transformation matrix
 static Vector3 TransformPoint(Vector3 p, Matrix m) {
     return Vector3Transform(p, m);
 }
 
-// Draw model with world matrix
-static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Color tint = WHITE) {
+// Draw model relative to a world matrix
+static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Color color) {
     Matrix prev = model.transform;
     model.transform = world;
 
-    float color[4] =
-    {
-        tint.r / 255.0f,
-        tint.g / 255.0f,
-        tint.b / 255.0f,
-        tint.a / 255.0f
-    };
-
-    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, BLACK);
+    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, color);
 
     model.transform = prev;
 }
 
+// Initialize Drone struct
+Drone InitDrone() {
+    Drone drone = { 0 };
+    drone.position = dronePosition;
+    drone.rotation = droneRotation;
+    
+    drone.chassis.position = chassisPosition;
+    drone.chassis.rotation = chassisRotation;
+    drone.chassis.color = chassisColor;
 
-// Main
-int main(void) {
+    drone.housing.position = housingPosition;
+    drone.housing.rotation = housingRotation;
+    drone.housing.color = housingColor;
 
-    InitWindow(800, 450, "raylib - drone model");
+    return drone;
+}
 
+// Initialize Camera3D
+Camera3D InitCamera() {
     Camera3D camera = { 0 };
     camera.position = (Vector3) { 0.0f, 10.0f, 10.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, 0.0f };
@@ -179,54 +217,61 @@ int main(void) {
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    return camera;
+}
+
+// Main loop
+int main(void) {
+
+    InitWindow(800, 450, "raylib - drone model");
+
+    Camera3D camera = InitCamera();
+    Drone drone = InitDrone();
+
     SetTargetFPS(60);
 
     // Models
 
-    Model cubeModel  = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+    Model droneHousingModel  = LoadModelFromMesh(GenMeshCube(2.0f, 2.0f, 2.0f));
+    Model droneChassisModel = LoadModelFromMesh(GenMeshCube(3.0f, 1.0f, 1.0f));
 
     RenderTexture2D target = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     while (!WindowShouldClose()) {
-        camera.target = 
-
-        if (IsKeyDown(KEY_W)) {
-            
-        }
-
-        if (IsKeyDown(KEY_A)) {
-            
-        }
-
-        if (IsKeyDown(KEY_S)) {
-            
-        }
-
-        if (IsKeyDown(KEY_D)) {
-            
-        }
-
-        if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
-            
-        }
-
-        if (IsKeyDown(KEY_SPACE)) {
-            
-        }
-
 
         // Hierarchical matrices
 
+        // World root
         Matrix worldRoot = MatrixIdentity();
 
+        // Child of world root
         Matrix droneWorld =
             ParentChild(
                 worldRoot,
                 TRS(
-                    Vector3{ 2.0f, 2.0f, 2.0f },
-                    1,
-                    droneAngleDeg,
-                    Vector3{ 1.0f, 1.0f, 1.0f }
+                    drone.position,
+                    drone.rotation,
+                    Vector3{ 1.0f, 1.0f, 1.0f } //Drone world's scale is always 1
+                )
+            );
+
+        // Childs of drone world
+        Matrix housingWorld =
+            ParentChild(
+                droneWorld,
+                TRS(
+                    drone.housing.position,
+                    drone.housing.rotation,
+                    drone.housing.scale
+                )
+            );
+        Matrix chassisWorld =
+            ParentChild(
+                droneWorld,
+                TRS(
+                    drone.chassis.position,
+                    drone.chassis.rotation,
+                    drone.chassis.scale
                 )
             );
 
@@ -237,7 +282,9 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                DrawModelWithWorldMatrix(cubeModel, droneWorld);
+                DrawModelWithWorldMatrix(droneHousingModel, droneWorld, housingColor);
+                DrawModelWithWorldMatrix(droneChassisModel, droneWorld, chassisColor);
+
                 DrawGrid(100, 1.0f);
                 DrawAxes(3.0f);
             EndMode3D();

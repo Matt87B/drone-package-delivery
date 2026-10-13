@@ -192,7 +192,7 @@ static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Color co
 }
 
 // Initialize Drone struct
-Drone InitDrone() {
+static Drone InitDrone() {
     Drone drone = { 0 };
     drone.position = dronePosition;
     drone.rotation = droneRotation;
@@ -238,6 +238,27 @@ int main(void) {
     RenderTexture2D target = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     while (!WindowShouldClose()) {
+
+        // Key listeners
+
+        if (IsKeyDown(KEY_A)) {
+            drone.position.x -= 0.1f;
+        }
+        if (IsKeyDown(KEY_D)) {
+            drone.position.x += 0.1f;
+        }
+        if (IsKeyDown(KEY_S)) {
+            drone.position.z -= 0.1f;
+        }
+        if (IsKeyDown(KEY_W)) {
+            drone.position.z += 0.1f;
+        }
+        if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
+            drone.position.y -= 0.1f;
+        }
+        if (IsKeyDown(KEY_SPACE)) {
+            drone.position.y += 0.1f;
+        }
 
         // Hierarchical matrices
 

@@ -23,6 +23,9 @@ Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 
+Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
+
 typedef struct DronePart {
     Vector3 position; // Position relative to parent position
     Vector3 rotation; // Pitch, Yaw, Roll
@@ -161,12 +164,12 @@ static Matrix TRS(const Vector3& t, const Vector3& r, const Vector3& s) {
     Matrix T = Translate(t);
     Matrix R = Rotation(r);
     Matrix S = Scale(s);
-    return MatrixMultiply(MatrixMultiply(S, R), T);
+    return MatrixMultiply(MatrixMultiply(T, R), S);
 }
 
 // Assign a child matrix to a world
 static Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal) {
-    return MatrixMultiply(childLocal, parentWorld);
+    return MatrixMultiply(parentWorld, childLocal);
 }
 
 static void DrawAxes(float len) {
@@ -199,10 +202,12 @@ static Drone InitDrone() {
     
     drone.chassis.position = chassisPosition;
     drone.chassis.rotation = chassisRotation;
+    drone.chassis.scale = chassisScale;
     drone.chassis.color = chassisColor;
 
     drone.housing.position = housingPosition;
     drone.housing.rotation = housingRotation;
+    drone.housing.scale = housingScale;
     drone.housing.color = housingColor;
 
     return drone;
@@ -242,10 +247,10 @@ int main(void) {
         // Key listeners
 
         if (IsKeyDown(KEY_A)) {
-            drone.position.x -= 0.1f;
+            drone.chassis.position.x -= 0.1f;
         }
         if (IsKeyDown(KEY_D)) {
-            drone.position.x += 0.1f;
+            drone.chassis.position.x += 0.1f;
         }
         if (IsKeyDown(KEY_S)) {
             drone.position.z -= 0.1f;
@@ -303,8 +308,8 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                DrawModelWithWorldMatrix(droneHousingModel, droneWorld, housingColor);
-                DrawModelWithWorldMatrix(droneChassisModel, droneWorld, chassisColor);
+                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, housingColor);
+                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, chassisColor);
 
                 DrawGrid(100, 1.0f);
                 DrawAxes(3.0f);

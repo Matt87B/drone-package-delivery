@@ -1,8 +1,164 @@
 #include "raylib.h"
 #include "raymath.h"
+#include "vector"
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
+
+// Lighting and Shader definitions
+static const char* lightingVs = R"(
+#version 330
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec3 vertexNormal;
+in vec4 vertexColor;
+
+uniform mat4 mvp;
+uniform mat4 matModel;
+
+out vec3 fragPos;
+out vec3 fragNormal;
+out vec4 fragColor;
+
+    void main() {
+        vec4 worldPos = matModel * vec4(vertexPosition, 1.0);
+        fragPos = worldPos.xyz;
+
+        // Correct normal transform for non-uniform scaling
+        fragNormal = mat3(transpose(inverse(matModel))) * vertexNormal;
+
+        fragColor = vertexColor;
+        gl_Position = mvp * vec4(vertexPosition, 1.0);
+    }
+)";
+
+static const char* lightingFs = R"(
+#version 330
+
+in vec3 fragPos;
+in vec3 fragNormal;
+in vec4 fragColor;
+
+out vec4 finalColor;
+
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+uniform vec4 baseColor;
+
+uniform float ambientStrength;
+uniform float specularStrength;
+uniform float shininess;
+
+    void main() {
+        vec3 N = normalize(fragNormal);
+        vec3 L = normalize(lightPos - fragPos);
+        vec3 V = normalize(viewPos - fragPos);
+        vec3 R = reflect(-L, N);
+
+        // Ambient
+        vec3 ambient = ambientStrength * baseColor.rgb;
+
+        // Diffuse
+        float diff = max(dot(N, L), 0.0);
+        vec3 diffuse = diff * baseColor.rgb;
+
+        // Specular
+        float spec = 0.0;
+        if (diff > 0.0)
+        {
+            spec = pow(max(dot(V, R), 0.0), shininess);
+        }
+        vec3 specular = specularStrength * spec * vec3(1.0, 1.0, 1.0);
+
+        vec3 result = ambient + diffuse + specular;
+
+        finalColor = vec4(result, baseColor.a) * fragColor;
+    }
+)";
+
+// Automatically calculates normals for meshes
+std::vector<Vector3> CalculateNormals(const std::vector<Vector3>& vertices, const std::vector<unsigned short>& indices) {
+    std::vector<Vector3> normals(vertices.size(), { 0.0f, 0.0f, 0.0f });
+
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        unsigned short idx0 = indices[i];
+        unsigned short idx1 = indices[i + 1];
+        unsigned short idx2 = indices[i + 2];
+
+        Vector3 v0 = vertices[idx0];
+        Vector3 v1 = vertices[idx1];
+        Vector3 v2 = vertices[idx2];
+
+        Vector3 edge1 = { v1.x - v0.x, v1.y - v0.y, v1.z - v0.z };
+        Vector3 edge2 = { v2.x - v0.x, v2.y - v0.y, v2.z - v0.z };
+
+        // Cross product
+        Vector3 faceNormal = {
+            edge1.y * edge2.z - edge1.z * edge2.y,
+            edge1.z * edge2.x - edge1.x * edge2.z,
+            edge1.x * edge2.y - edge1.y * edge2.x
+        };
+
+        normals[idx0].x += faceNormal.x; normals[idx0].y += faceNormal.y; normals[idx0].z += faceNormal.z;
+        normals[idx1].x += faceNormal.x; normals[idx1].y += faceNormal.y; normals[idx1].z += faceNormal.z;
+        normals[idx2].x += faceNormal.x; normals[idx2].y += faceNormal.y; normals[idx2].z += faceNormal.z;
+    }
+
+    for (auto& normal : normals) {
+        float length = sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+        if (length > 0.0f) {
+            normal.x /= length;
+            normal.y /= length;
+            normal.z /= length;
+        }
+    }
+
+    return normals;
+}
+
+// Generate indices for unshared vertices
+std::vector<unsigned short> GenerateSequentialIndices(size_t vertexCount) {
+    std::vector<unsigned short> indices(vertexCount);
+    for (size_t i = 0; i < vertexCount; i++) {
+        indices[i] = static_cast<unsigned short>(i);
+    }
+    return indices;
+}
+
+// Model vertices, texcoords and indices
+
+std::vector<Vector3> housingVertices = {
+    //Front face
+    { -1.0f, 0.5f, 1.5f }, { -1.5f, -0.5f, 1.5f }, { 1.0f, 0.5f, 1.5f },
+    { 1.0f, 0.5f, 1.5f }, { -1.5f, -0.5f, 1.5f }, { 1.5f, -0.5f, 1.5f },
+
+    // Right face
+    { -1.0f, 0.5f, -1.5f }, { -1.5f, -0.5f, -1.5f }, { -1.0f, 0.5f, 1.5f },
+    { -1.0f, 0.5f, 1.5f }, { -1.5f, -0.5f, -1.5f }, { -1.5f, -0.5f, 1.5f },
+
+    // Back face
+    { 1.0f, 0.5f, -1.5f }, { 1.5f, -0.5f, -1.5f }, { -1.0f, 0.5f, -1.5f },
+    { -1.0f, 0.5f, -1.5f }, { 1.5f, -0.5f, -1.5f }, { -1.5f, -0.5f, -1.5f },
+
+    // Left face
+    { 1.0f, 0.5f, 1.5f }, { 1.5f, -0.5f, 1.5f }, { 1.0f, 0.5f, -1.5f },
+    { 1.0f, 0.5f, -1.5f }, { 1.5f, -0.5f, 1.5f }, { 1.5f, -0.5f, -1.5f },
+
+    // Top face
+    { -1.0f, 0.5f, 1.5f }, { 1.0f, 0.5f, 1.5f }, { -1.0f, 0.5f, -1.5f },
+    { -1.0f, 0.5f, -1.5f }, { 1.0f, 0.5f, 1.5f }, { 1.0f, 0.5f, -1.5f },
+
+    // Bottom face
+    { -1.5f, -0.5f, -1.5f }, { 1.5f, -0.5f, -1.5f }, { -1.5f, -0.5f, 1.5f },
+    { -1.5f, -0.5f, 1.5f }, { 1.5f, -0.5f, -1.5f }, { 1.5f, -0.5f, 1.5f }
+};
+
+std::vector<unsigned short> housingIndices = GenerateSequentialIndices(housingVertices.size());
+std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingIndices);
+
+// Drone Parameters
+
 
 // Dimensions
 static float housingWidth = 4.0f;
@@ -18,31 +174,39 @@ Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 
-// Dynamic positions
+// Positions
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
-Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 1.75f };
 
+// Scales
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 
+// Lighting uniforms
+Vector3 lightPos = { 20.0f, 20.0f, 20.0f };
+
+float ambientStrength = 0.3f;
+float specularStrength = 0.50f;
+float shininess = 200.0f;
+
+// Custom structs for Drone
 typedef struct DronePart {
     Vector3 position; // Position relative to parent position
     Vector3 rotation; // Pitch, Yaw, Roll
-    Vector3 scale;
+    Vector3 scale = Vector3{ 1.0f, 1.0f, 1.0f };
 
     Color color;
 } DronePart;
 
 typedef struct Drone {
-    Vector3 position; // World position of chassis
-    Vector3 rotation; // World rotation of chassis
+    Vector3 position; // World position of drone
+    Vector3 rotation; // World rotation of drone
 
     DronePart chassis;
     DronePart housing;
     //DronePart propellers[4];
 } Drone;
-
 
 // Matrix transformation helpers
 
@@ -164,19 +328,12 @@ static Matrix TRS(const Vector3& t, const Vector3& r, const Vector3& s) {
     Matrix T = Translate(t);
     Matrix R = Rotation(r);
     Matrix S = Scale(s);
-    return MatrixMultiply(MatrixMultiply(T, R), S);
+    return MatrixMultiply(MatrixMultiply(S, R), T);
 }
 
 // Assign a child matrix to a world
 static Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal) {
-    return MatrixMultiply(parentWorld, childLocal);
-}
-
-static void DrawAxes(float len) {
-    DrawLine3D({0, 0, 0}, {len, 0, 0}, RED);
-    DrawLine3D({0, 0, 0}, {0, len, 0}, GREEN);
-    DrawLine3D({0, 0, 0}, {0, 0, len}, BLUE);
-    DrawSphere({0, 0, 0}, 0.09f, YELLOW);
+    return MatrixMultiply(childLocal, parentWorld);
 }
 
 // Transform a vector in accordance with a given transformation matrix
@@ -185,14 +342,27 @@ static Vector3 TransformPoint(Vector3 p, Matrix m) {
 }
 
 // Draw model relative to a world matrix
-static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Color color) {
+static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Shader shader, Color tint = WHITE) {
     Matrix prev = model.transform;
     model.transform = world;
 
-    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, color);
+    float color[4] =
+    {
+        tint.r / 255.0f,
+        tint.g / 255.0f,
+        tint.b / 255.0f,
+        tint.a / 255.0f
+    };
+
+    int baseColorLoc = GetShaderLocation(shader, "baseColor");
+    SetShaderValue(shader, baseColorLoc, color, SHADER_UNIFORM_VEC4);
+
+    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, WHITE);
 
     model.transform = prev;
 }
+
+// Init functions
 
 // Initialize Drone struct
 static Drone InitDrone() {
@@ -225,45 +395,137 @@ Camera3D InitCamera() {
     return camera;
 }
 
+// Draw and custom mesh functions
+
+static void DrawAxes(float len) {
+    DrawLine3D({0, 0, 0}, {len, 0, 0}, RED);
+    DrawLine3D({0, 0, 0}, {0, len, 0}, GREEN);
+    DrawLine3D({0, 0, 0}, {0, 0, len}, BLUE);
+    DrawSphere({0, 0, 0}, 0.09f, YELLOW);
+}
+
+// Create a custom mesh
+static Mesh CreateCustomMesh(const std::vector<Vector3>& vertices, const std::vector<Vector3>& normals, const std::vector<unsigned short>& indices) {
+    Mesh mesh = { 0 };
+
+    mesh.vertexCount = vertices.size();
+    mesh.triangleCount = indices.size() / 3;
+
+    // Vertices
+    if (mesh.vertexCount > 0) {
+        mesh.vertices = (float*)MemAlloc(vertices.size() * 3 * sizeof(float));
+
+        for (size_t i = 0; i < vertices.size(); i++) {
+            mesh.vertices[i * 3]     = vertices[i].x;
+            mesh.vertices[i * 3 + 1] = vertices[i].y;
+            mesh.vertices[i * 3 + 2] = vertices[i].z;
+        }
+    }
+
+    // Normals
+    if (mesh.vertexCount > 0 && !normals.empty()) {
+        mesh.normals = (float*)MemAlloc(normals.size() * 3 * sizeof(float));
+        for (size_t i = 0; i < normals.size(); i++) {
+            mesh.normals[i * 3]     = normals[i].x;
+            mesh.normals[i * 3 + 1] = normals[i].y;
+            mesh.normals[i * 3 + 2] = normals[i].z;
+        }
+    }
+
+    // Indices for avoiding duplicate vertices
+    if (mesh.triangleCount > 0) {
+        mesh.indices = (unsigned short*)MemAlloc(indices.size() * sizeof(unsigned short));
+        for (size_t i = 0; i < indices.size(); i++) {
+            mesh.indices[i] = indices[i];
+        }
+    }
+
+    mesh.texcoords = (float*)MemAlloc(mesh.vertexCount * 2 * sizeof(float));
+
+    UploadMesh(&mesh, false);
+
+    return mesh;
+}
+
 // Main loop
 int main(void) {
 
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(800, 450, "raylib - drone model");
 
+    // Objects
     Camera3D camera = InitCamera();
     Drone drone = InitDrone();
 
     SetTargetFPS(60);
 
+    // Meshes
+    Mesh droneHousingMesh = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
+    Mesh droneChassisMesh = GenMeshCube(0.75f, 0.75f, 0.5f);
+
     // Models
+    Model droneHousingModel = LoadModelFromMesh(droneHousingMesh);
+    Model droneChassisModel = LoadModelFromMesh(droneChassisMesh);
 
-    Model droneHousingModel  = LoadModelFromMesh(GenMeshCube(2.0f, 2.0f, 2.0f));
-    Model droneChassisModel = LoadModelFromMesh(GenMeshCube(3.0f, 1.0f, 1.0f));
+    // Shader
+    Shader lighting = LoadShaderFromMemory(lightingVs, lightingFs);
 
-    RenderTexture2D target = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
+    droneHousingModel.materials[0].shader = lighting;
+    droneChassisModel.materials[0].shader = lighting;
+
+    int baseColorLoc = GetShaderLocation(lighting, "baseColor");
+
+    // Lighting
+
+    int lightPosLoc = GetShaderLocation(lighting, "lightPos");
+    int viewPosLoc = GetShaderLocation(lighting, "viewPos");
+    int ambientLoc = GetShaderLocation(lighting, "ambientStrength");
+    int specularLoc = GetShaderLocation(lighting, "specularStrength");
+    int shininessLoc = GetShaderLocation(lighting, "shininess");
 
     while (!WindowShouldClose()) {
 
         // Key listeners
 
         if (IsKeyDown(KEY_A)) {
-            drone.chassis.position.x -= 0.1f;
+            drone.position.x -= 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_D)) {
-            drone.chassis.position.x += 0.1f;
+            drone.position.x += 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_S)) {
-            drone.position.z -= 0.1f;
+            drone.position.z -= 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_W)) {
-            drone.position.z += 0.1f;
+            drone.position.z += 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
-            drone.position.y -= 0.1f;
+            drone.position.y -= 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_SPACE)) {
-            drone.position.y += 0.1f;
+            drone.position.y += 5.0f * GetFrameTime();
         }
+        if (IsKeyDown(KEY_RIGHT)) {
+            drone.rotation.y += 5.0f * GetFrameTime();
+        }
+        if (IsKeyDown(KEY_LEFT)) {
+            drone.rotation.y -= 5.0f * GetFrameTime();
+        }
+        if (IsKeyDown(KEY_UP)) {
+            drone.rotation.x += 5.0f * GetFrameTime();
+        }
+        if (IsKeyDown(KEY_DOWN)) {
+            drone.rotation.x -= 5.0f * GetFrameTime();
+        }
+
+        // Init shader uniforms
+
+        SetShaderValue(lighting, lightPosLoc, &lightPos, SHADER_UNIFORM_VEC3);
+        SetShaderValue(lighting, viewPosLoc, &camera.position, SHADER_UNIFORM_VEC3);
+        SetShaderValue(lighting, ambientLoc, &ambientStrength, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(lighting, specularLoc, &specularStrength, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(lighting, shininessLoc, &shininess, SHADER_UNIFORM_FLOAT);
+
 
         // Hierarchical matrices
 
@@ -308,11 +570,13 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, housingColor);
-                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, chassisColor);
+                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
+                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
 
                 DrawGrid(100, 1.0f);
                 DrawAxes(3.0f);
+                DrawSphere(lightPos, 0.5f, YELLOW);
+                
             EndMode3D();
 
             // Draw all 2D geometry here

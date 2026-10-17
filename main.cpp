@@ -154,34 +154,87 @@ std::vector<Vector3> housingVertices = {
     { -1.5f, -0.5f, 1.5f }, { 1.5f, -0.5f, -1.5f }, { 1.5f, -0.5f, 1.5f }
 };
 
+std::vector<Vector3> armVertices = {
+    // Back cap
+    { 0.0f, 0.25f, 0.0f }, { 0.5f, 0.0f, 0.0f }, { -0.5f, 0.0f, 0.0f },
+    { 0.5f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { -0.5f, 0.0f, 0.0f },
+
+    // Arm
+
+    { 0.0f, 0.25f, 0.0f }, { 0.0f, 0.25f, 1.5f }, { 0.5f, 0.0f, 0.0f },
+    { 0.0f, 0.25f, 1.5f }, { 0.25f, 0.0f, 1.5f }, { 0.5f, 0.0f, 0.0f },
+
+    { 0.0f, 0.25f, 0.0f }, { -0.5f, 0.0f, 0.0f }, { 0.0f, 0.25f, 1.5f },
+    { 0.0f, 0.25f, 1.5f }, { -0.5f, 0.0f, 0.0f }, { -0.25f, 0.0f, 1.5f },
+
+    { 0.5f, 0.0f, 0.0f }, { 0.25f, 0.0f, 1.5f }, { 0.0f, -0.25f, 0.0f },
+    { 0.0f, -0.25f, 0.0f }, { 0.25f, 0.0f, 1.5f }, {0.0f, -0.25f, 1.5f },
+
+    { -0.5f, 0.0f, 0.0f }, { 0.0f, -0.25f, 1.5f }, { -0.25f, 0.0f, 1.5f },
+    { -0.5f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { 0.0f, -0.25f, 1.5f },
+
+    // Wrist
+
+    { 1.0f, 0.25f, 4.0f }, { 0.0f, 0.25f, 1.5f }, { -0.25f, 0.0f, 1.5f },
+    { 1.0f, 0.25f, 4.0f }, { -0.25f, 0.0f, 1.5f }, { 0.75f, 0.0f, 4.0f },
+
+    { 0.0f, 0.25f, 1.5f }, { 1.0f, 0.25f, 4.0f },  { 0.25f, 0.0f, 1.5f },
+    { 0.25f, 0.0f, 1.5f }, { 1.0f, 0.25f, 4.0f },  { 1.25f, 0.0f, 4.0f },
+
+    { 1.25f, 0.0f, 4.0f }, { 0.0f, -0.25f, 1.5f }, { 0.25f, 0.0f, 1.5f },
+    { 1.25f, 0.0f, 4.0f }, { 1.0f, -0.25f, 4.0f }, { 0.0f, -0.25f, 1.5f },
+
+    { 1.0f, -0.25f, 4.0f }, { 0.75f, 0.0f, 4.0f }, { -0.25f, 0.0f, 1.5f },
+    { 1.0f, -0.25f, 4.0f }, { -0.25f, 0.0f, 1.5f }, {0.0f, -0.25f, 1.5f },
+
+    // Front rect
+
+    { 1.0f, 0.25f, 4.5f }, { 1.25f, 0.0f, 4.5f }, { 1.0f, 0.25f, 4.0f },
+
+    // Front cap
+    
+    { 0.75f, 0.0f, 4.5f }, { 1.25f, 0.0f, 4.5f }, { 1.0f, 0.25f, 4.5f }, 
+    { 0.75f, 0.0f, 4.5f }, { 1.0f, -0.25f, 4.5f }, { 1.25f, 0.0f, 4.5f }
+};
+
 std::vector<unsigned short> housingIndices = GenerateSequentialIndices(housingVertices.size());
 std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingIndices);
 
+std::vector<unsigned short> armIndices = GenerateSequentialIndices(armVertices.size());
+std::vector<Vector3> armNormals = CalculateNormals(armVertices, armIndices);
+
 // Drone Parameters
-
-
-// Dimensions
-static float housingWidth = 4.0f;
-static float housingLength = 6.0f;
-static float housingDepth = 3.0f;
 
 // Colours
 static Color housingColor = Color{ 40, 120,  40, 255 };
-static Color chassisColor = Color{ 30, 100, 70, 255 };
+static Color chassisColor = Color{ 128, 128, 128, 255 };
+static Color armColor = Color{ 25, 31, 52, 255 };
 
 // Angles
 Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
-
+Vector3 armRotations[] = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
+};
 // Positions
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 1.75f };
+Vector3 armPositions[]  = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
+};
 
 // Scales
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
 
 // Lighting uniforms
 Vector3 lightPos = { 20.0f, 20.0f, 20.0f };
@@ -205,7 +258,7 @@ typedef struct Drone {
 
     DronePart chassis;
     DronePart housing;
-    //DronePart propellers[4];
+    DronePart arms[4];
 } Drone;
 
 // Matrix transformation helpers
@@ -380,6 +433,16 @@ static Drone InitDrone() {
     drone.housing.scale = housingScale;
     drone.housing.color = housingColor;
 
+    for (DronePart arm : drone.arms) {
+        arm.scale = armScale;
+        arm.color = armColor;
+    }
+    for (int i = 0; i < 4; i++) {
+        drone.arms[i].position = armPositions[i];
+        drone.arms[i].rotation = armRotations[i];
+    }
+
+
     return drone;
 }
 
@@ -460,18 +523,21 @@ int main(void) {
     SetTargetFPS(60);
 
     // Meshes
-    Mesh droneHousingMesh = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
-    Mesh droneChassisMesh = GenMeshCube(0.75f, 0.75f, 0.5f);
+    Mesh droneHousingMesh   = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
+    Mesh droneChassisMesh   = GenMeshCube(0.75f, 0.75f, 0.5f);
+    Mesh droneArmMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
 
     // Models
     Model droneHousingModel = LoadModelFromMesh(droneHousingMesh);
     Model droneChassisModel = LoadModelFromMesh(droneChassisMesh);
+    Model droneArmModel     = LoadModelFromMesh(droneArmMesh);
 
     // Shader
     Shader lighting = LoadShaderFromMemory(lightingVs, lightingFs);
 
-    droneHousingModel.materials[0].shader = lighting;
-    droneChassisModel.materials[0].shader = lighting;
+    droneHousingModel.materials[0].shader   = lighting;
+    droneChassisModel.materials[0].shader   = lighting;
+    droneArmModel.materials[0].shader       = lighting;
 
     int baseColorLoc = GetShaderLocation(lighting, "baseColor");
 
@@ -563,6 +629,18 @@ int main(void) {
                 )
             );
 
+        Matrix armWorlds[4];
+        for (int i = 0; i < 4; i++) {
+            armWorlds[i] = 
+                ParentChild(
+                housingWorld,
+                TRS(
+                    drone.arms[i].position,
+                    drone.arms[i].rotation,
+                    drone.arms[i].scale
+                )
+            );
+        }
 
         BeginDrawing();
             ClearBackground(RAYWHITE);
@@ -570,8 +648,11 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
-                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
+                //DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
+                //DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
+                for (Matrix armWorld : armWorlds) {
+                    DrawModelWithWorldMatrix(droneArmModel, armWorld, lighting, armColor);
+                }
 
                 DrawGrid(100, 1.0f);
                 DrawAxes(3.0f);

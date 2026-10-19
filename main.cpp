@@ -300,14 +300,14 @@ Vector3 armScales[]  = {
     Vector3{ 1.0f, 1.0f, 1.0f }
 };
 Vector3 propellerScales[]  = {
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f }
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f },
+    Vector3{ 0.6f, 0.6f, 0.6f }
 };
 
 
@@ -750,8 +750,8 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                //DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
-                //DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
+                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
+                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
                 for (Matrix armWorld : armWorlds) {
                     DrawModelWithWorldMatrix(droneArmModel, armWorld, lighting, armColor);
                 }

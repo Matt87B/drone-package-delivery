@@ -1,3 +1,4 @@
+#include "mat_utils.h"
 #include "raymath.h"
 
 // Matrix transformation helpers

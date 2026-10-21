@@ -71,3 +71,4 @@ uniform float shininess;
         finalColor = vec4(result, baseColor.a) * fragColor;
     }
 )";
+

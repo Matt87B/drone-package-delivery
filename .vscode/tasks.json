@@ -6,7 +6,9 @@
       "label": "build raylib project",
       "command": "g++",
       "args": [
-        "${workspaceFolder}/*.cpp",
+        "${workspaceFolder}/src/*.cpp",
+        "-I",
+        "./include",
         "-I",
         "C:\\raylib\\raylib\\src",
         "-L",

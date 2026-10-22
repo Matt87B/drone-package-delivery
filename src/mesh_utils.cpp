@@ -5,6 +5,26 @@
 #include "raylib.h"
 #include "raymath.h"
 
+// Draw model relative to a world matrix
+void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Shader shader, Color tint) {
+    Matrix prev = model.transform;
+    model.transform = world;
+
+    float color[4] =
+    {
+        tint.r / 255.0f,
+        tint.g / 255.0f,
+        tint.b / 255.0f,
+        tint.a / 255.0f
+    };
+
+    int baseColorLoc = GetShaderLocation(shader, "baseColor");
+    SetShaderValue(shader, baseColorLoc, color, SHADER_UNIFORM_VEC4);
+
+    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, WHITE);
+
+    model.transform = prev;
+}
 
 // Create a custom mesh
 Mesh CreateCustomMesh(const std::vector<Vector3>& vertices, const std::vector<Vector3>& normals, const std::vector<unsigned short>& indices) {

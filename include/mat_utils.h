@@ -17,5 +17,8 @@ Matrix Rotation(Vector3 v);
 Matrix TRS(const Vector3& t, const Vector3& r, const Vector3& s);
 Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal);
 Vector3 TransformPoint(Vector3 p, Matrix m);
+Vector3 GetForwardVector(float yaw);
+Vector3 GetRightVector(float yaw);
+Vector3 ScaleVector(Vector3 v, float factor);
 
 #endif

@@ -132,3 +132,23 @@ Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal) {
 Vector3 TransformPoint(Vector3 p, Matrix m) {
     return Vector3Transform(p, m);
 }
+
+Vector3 GetForwardVector(float yaw) {
+    Vector3 forward;
+    forward.x = sinf(yaw);
+    forward.y = 0.0f;
+    forward.z = cosf(yaw);
+    return forward;
+}
+
+Vector3 GetRightVector(float yaw) {
+    Vector3 right;
+    right.x = cosf(yaw);
+    right.y = 0.0f;
+    right.z = -sinf(yaw);
+    return right;
+}
+
+Vector3 ScaleVector(Vector3 v, float factor) {
+    return Vector3 { v.x * factor, v.y * factor, v.z * factor };
+}

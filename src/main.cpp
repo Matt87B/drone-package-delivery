@@ -12,206 +12,9 @@
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
+#define DRONE_SPEED 10.0f
 
-// Model vertices, texcoords and indices
-
-std::vector<Vector3> housingVertices = {
-    // Top
-    { -0.5f, 0.8f, -1.5f }, { -0.5f, 1.0f, 0.0f }, { 0.5f, 0.8f, -1.5f },
-    { 0.5f, 0.8f, -1.5f }, { -0.5f, 1.0f, 0.0f }, { 0.5f, 1.0f, 0.0f },
-
-    { 0.5f, 0.8f, -1.5f }, { 0.5f, 1.0f, 0.0f }, { 1.0f, 0.5f, 0.0f },
-    { 1.0f, 0.5f, -1.5f }, { 0.5f, 0.8f, -1.5f }, { 1.0f, 0.5f, 0.0f },
-
-    { -0.5f, 0.8f, -1.5f }, { -1.0f, 0.5f, -1.5f }, { -0.5f, 1.0f, 0.0f },
-    { -1.0f, 0.5f, -1.5f }, { -1.0f, 0.5f, 0.0f }, { -0.5f, 1.0f, 0.0f },
-
-
-    // Back
-    { -0.5f, 0.8f, -1.5f }, { 0.5f, 0.8f, -1.5f }, { -0.7f, 0.5f, -2.5f },
-    { 0.7f, 0.5f, -2.5f }, { -0.7f, 0.5f, -2.5f }, { 0.5f, 0.8f, -1.5f },
-
-    { 0.7f, 0.5f, -2.5f }, { 1.0f, 0.0f, -2.0f }, { -0.7f, 0.5f, -2.5f },
-    { -0.7f, 0.5f, -2.5f }, { 1.0f, 0.0f, -2.0f }, { -1.0f, 0.0f, -2.0f },
-
-    { -1.5f, 0.5f, -1.5f }, { -1.0f, 0.5f, -1.5f }, { -1.0f, 0.0f, -1.0f },
-    { -1.5f, 0.5f, -1.5f }, { -1.0f, 0.0f, -1.0f }, { -1.5f, 0.0f, -1.0f },
-
-    { 1.0f, 0.5f, -1.5f }, { 1.5f, 0.5f, -1.5f }, { 1.5f, 0.0f, -1.0f },
-    { 1.0f, 0.5f, -1.5f }, { 1.5f, 0.0f, -1.0f }, { 1.0f, 0.0f, -1.0f },
-
-    { 0.9f, 0.5f, -1.5f }, { 1.0f, 0.5f, -1.5f }, { 1.0f, 0.0f, -1.0f },
-    { 0.9f, 0.5f, -1.5f }, { 1.0f, 0.0f, -1.0f }, { 0.9f, 0.0f, -1.0f },
-
-    { 0.9f, 0.0f, -2.0f }, { 1.0f, 0.0f, -2.0f }, { 1.0f, 0.5f, -1.5f },
-    { 0.9f, 0.0f, -2.0f }, { 1.0f, 0.5f, -1.5f }, { 0.9f, 0.5f, -1.5f },
-
-    { -1.0f, 0.5f, -1.5f }, { -0.5f, 0.8f, -1.5f }, { -0.7f, 0.5f, -2.5f },
-    { -1.0f, 0.5f, -1.5f }, { -0.7f, 0.5f, -2.5f }, { -1.0f, 0.0f, -2.0f },
-
-    { -1.0f, 0.0f, -2.0f }, { -0.9f, 0.0f, -2.0f }, { -0.9f, 0.5f, -1.5f },
-    { -1.0f, 0.0f, -2.0f }, { -0.9f, 0.5f, -1.5f }, { -1.0f, 0.5f, -1.5f },
-
-    { -0.9f, 0.5f, -1.5f }, { -0.9f, 0.0f, -1.0f }, { -1.0f, 0.0f, -1.0f },
-    { -0.9f, 0.5f, -1.5f }, { -1.0f, 0.0f, -1.0f }, { -1.0f, 0.5f, -1.5f },
-
-    { 1.0f, 0.5f, -1.5f }, { 1.0f, 0.0f, -2.0f }, { 0.7f, 0.5f, -2.5f },
-    { 1.0f, 0.5f, -1.5f }, { 0.7f, 0.5f, -2.5f }, { 0.5f, 0.8f, -1.5f },
-
-
-
-    // Sides
-    { -1.0f, 0.5f, -1.5f }, { -1.5f, 0.5f, -1.5f }, { -1.5f, 0.5f, 0.0f },
-    { -1.0f, 0.5f, -1.5f }, { -1.5f, 0.5f, 0.0f }, { -1.0f, 0.5f, 0.0f },
-
-    { 1.0f, 0.5f, -1.5f }, { 1.0f, 0.5f, 0.0f }, { 1.5f, 0.5f, 0.0f },
-    { 1.0f, 0.5f, -1.5f }, { 1.5f, 0.5f, 0.0f }, { 1.5f, 0.5f, -1.5f },
-
-    { -1.5f, 0.5f, -1.5f }, { -1.5f, 0.0f, 0.0f }, { -1.5f, 0.5f, 0.0f },
-    { -1.5f, 0.5f, -1.5f }, { -1.5f, 0.0f, -1.0f }, { -1.5f, 0.0f, 0.0f },
-
-    { 1.5f, 0.5f, -1.5f }, { 1.5f, 0.5f, 0.0f }, { 1.5f, 0.0f, 0.0f },
-    { 1.5f, 0.5f, -1.5f }, { 1.5f, 0.0f, 0.0f }, { 1.5f, 0.0f, -1.0f },
-
-    { 1.0f, 0.5f, 0.0f }, { 1.0f, 0.5f, 1.5f }, { 1.5f, 0.5f, 1.5f },
-    { 1.0f, 0.5f, 0.0f }, { 1.5f, 0.5f, 1.5f }, { 1.5f, 0.5f, 0.0f },
-
-    { -1.0f, 0.5f, 0.0f }, { -1.5f, 0.5f, 0.0f }, { -1.5f, 0.5f, 1.5f },
-    { -1.0f, 0.5f, 0.0f }, { -1.5f, 0.5f, 1.5f }, { -1.0f, 0.5f, 1.5f },
-
-    { 1.5f, 0.5f, 0.0f }, { 1.5f, 0.5f, 1.5f }, { 1.5f, 0.0f, 1.0f },
-    { 1.5f, 0.5f, 0.0f }, { 1.5f, 0.0f, 1.0f }, { 1.5f, 0.0f, 0.0f },
-
-    { -1.5f, 0.5f, 0.0f }, { -1.5f, 0.0f, 0.0f }, { -1.5f, 0.0f, 1.0f },
-    { -1.5f, 0.5f, 0.0f }, { -1.5f, 0.0f, 1.0f }, { -1.5f, 0.5f, 1.5f },
-
-
-    // Front
-    { 1.5f, 0.5f, 1.5f }, { 1.0f, 0.5f, 1.5f }, { 1.0f, 0.0f, 1.0f },
-    { 1.5f, 0.5f, 1.5f }, { 1.0f, 0.0f, 1.0f }, { 1.5f, 0.0f, 1.0f },
-
-    { -1.0f, 0.5f, 1.5f }, { -1.5f, 0.5f, 1.5f }, { -1.5f, 0.0f, 1.0f },
-    { -1.0f, 0.5f, 1.5f }, { -1.5f, 0.0f, 1.0f }, { -1.0f, 0.0f, 1.0f },
-
-    { -1.0f, 0.5f, 0.0f }, { -1.0f, 0.5f, 1.5f }, { -1.0f, 0.0f, 1.0f },
-    { -1.0f, 0.5f, 0.0f }, { -1.0f, 0.0f, 1.0f }, { -1.0f, 0.0f, 0.0f },
-
-    { 1.0f, 0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 1.0f },
-    { 1.0f, 0.5f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 1.0f, 0.5f, 1.5f },
-
-    { -1.0f, 0.5f, 0.0f }, { -1.0f, 0.0f, 0.0f }, { -0.9f, 0.0f, 0.0f },
-    { -1.0f, 0.5f, 0.0f }, { -0.9f, 0.0f, 0.0f }, { -0.9f, 0.5f, 0.0f },
-
-    { -0.5f, 0.9f, 0.0f }, { -0.5f, 1.0f, 0.0f }, { -1.0f, 0.5f, 0.0f },
-    { -0.5f, 0.9f, 0.0f }, { -1.0f, 0.5f, 0.0f }, { -0.9f, 0.5f, 0.0f },
-
-    { 0.9f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.5f, 0.0f }, 
-    { 0.9f, 0.5f, 0.0f }, { 0.9f, 0.0f, 0.0f }, { 1.0f, 0.5f, 0.0f }, 
-
-    { 1.0f, 0.5f, 0.0f }, { 0.5f, 1.0f, 0.0f }, { 0.5f, 0.9f, 0.0f },
-    { 0.9f, 0.5f, 0.0f }, { 1.0f, 0.5f, 0.0f }, { 0.5f, 0.9f, 0.0f }, 
-
-    { 0.5f, 1.0f, 0.0f }, { -0.5f, 1.0f, 0.0f }, { -0.5f, 0.9f, 0.0f },
-    { 0.5f, 1.0f, 0.0f }, { -0.5f, 0.9f, 0.0f }, { 0.5f, 0.9f, 0.0f },
-
-    // Bottom
-    
-    { 1.0f, 0.0f, -1.0f }, { 1.5f, 0.0f, -1.0f }, { 1.5f, 0.0f, 0.0f },
-    { 1.0f, 0.0f, -1.0f }, { 1.5f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f },
-
-    { 1.0f, 0.0f, 0.0f }, { 1.5f, 0.0f, 0.0f }, { 1.5f, 0.0f, 1.0f },
-    { 1.0f, 0.0f, 0.0f }, { 1.5f, 0.0f, 1.0f }, { 1.0f, 0.0f, 1.0f },
-
-    { -1.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 1.0f }, { -1.5f, 0.0f, 1.0f },
-    { -1.0f, 0.0f, 0.0f }, { -1.5f, 0.0f, 1.0f }, { -1.5f, 0.0f, 0.0f },
-
-    { -1.0f, 0.0f, -1.0f }, { -1.0f, 0.0f, 0.0f }, { -1.5f, 0.0f, 0.0f },
-    { -1.0f, 0.0f, -1.0f }, { -1.5f, 0.0f, 0.0f }, { -1.5f, 0.0f, -1.0f },
-
-    { 0.9f, 0.0f, -1.0f }, { 1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f, 0.0f },
-    { 0.9f, 0.0f, -1.0f }, { 1.0f, 0.0f, 0.0f }, { 0.9f, 0.0f, 0.0f },
-
-    { -0.9f, 0.0f, -1.0f }, { -0.9f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f },
-    { -0.9f, 0.0f, -1.0f }, { -1.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, -1.0f }
-};
-
-std::vector<Vector3> armVertices = {
-    // Back cap
-    { 0.0f, 0.25f, 0.0f }, { 0.25f, 0.0f, 0.0f }, { -0.25f, 0.0f, 0.0f },
-    { 0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { -0.25f, 0.0f, 0.0f },
-
-    // Arm
-
-    { 0.0f, 0.25f, 0.0f }, { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, 0.0f },
-    { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, 0.5f }, { 0.25f, 0.0f, 0.0f },
-
-    { 0.0f, 0.25f, 0.0f }, { -0.25f, 0.0f, 0.0f }, { 0.0f, 0.25f, 0.5f },
-    { 0.0f, 0.25f, 0.5f }, { -0.25f, 0.0f, 0.0f }, { -0.25f, 0.0f, 0.5f },
-
-    { 0.25f, 0.0f, 0.0f }, { 0.25f, 0.0f, 0.5f }, { 0.0f, -0.25f, 0.0f },
-    { 0.0f, -0.25f, 0.0f }, { 0.25f, 0.0f, 0.5f }, {0.0f, -0.25f, 0.5f },
-
-    { -0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.5f }, { -0.25f, 0.0f, 0.5f },
-    { -0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { 0.0f, -0.25f, 0.5f },
-
-    // Wrist
-
-    { 0.7f, 0.15f, 2.0f }, { 0.0f, 0.25f, 0.5f }, { -0.25f, 0.0f, 0.5f },
-    { 0.7f, 0.15f, 2.0f }, { -0.25f, 0.0f, 0.5f }, { 0.5f, 0.0f, 2.0f },
-
-    { 0.0f, 0.25f, 0.5f }, { 0.7f, 0.15f, 2.0f },  { 0.25f, 0.0f, 0.5f },
-    { 0.25f, 0.0f, 0.5f }, { 0.7f, 0.15f, 2.0f },  { 0.75f, 0.0f, 2.0f },
-
-    { 0.75f, 0.0f, 2.0f }, { 0.0f, -0.25f, 0.5f }, { 0.25f, 0.0f, 0.5f },
-    { 0.75f, 0.0f, 2.0f }, { 0.7f, -0.15f, 2.0f }, { 0.0f, -0.25f, 0.5f },
-
-    { 0.7f, -0.15f, 2.0f }, { 0.5f, 0.0f, 2.0f }, { -0.25f, 0.0f, 0.5f },
-    { 0.7f, -0.15f, 2.0f }, { -0.25f, 0.0f, 0.5f }, {0.0f, -0.25f, 0.5f },
-
-    // Front rect
-
-    { 0.7f, 0.15f, 3.0f }, { 0.75f, 0.0f, 3.0f }, { 0.7f, 0.15f, 2.0f },
-    { 0.7f, 0.15f, 2.0f }, { 0.75f, 0.0f, 3.0f }, { 0.75f, 0.0f, 2.0f },
- 
-    { 0.7f, 0.15f, 3.0f }, { 0.7f, 0.15f, 2.0f }, { 0.5f, 0.0f, 2.0f },
-    { 0.7f, 0.15f, 3.0f }, { 0.5f, 0.0f, 2.0f }, { 0.5f, 0.0f, 3.0f },
-
-    { 0.7f, -0.15f, 2.0f }, { 0.7f, -0.15f, 3.0f }, { 0.5f, 0.0f, 2.0f },
-    { 0.5f, 0.0f, 2.0f }, { 0.7f, -0.15f, 3.0f }, { 0.5f, 0.0f, 3.0f },
-
-    { 0.7f, -0.15f, 3.0f }, { 0.7f, -0.15f, 2.0f }, { 0.75f, 0.0f, 3.0f },
-    { 0.75f, 0.0f, 2.0f }, { 0.75f, 0.0f, 3.0f }, { 0.7f, -0.15f, 2.0f },
-
-    // Front cap
-    
-    { 0.5f, 0.0f, 3.0f }, { 0.75f, 0.0f, 3.0f }, { 0.7f, 0.15f, 3.0f }, 
-    { 0.5f, 0.0f, 3.0f }, { 0.7f, -0.15f, 3.0f }, { 0.75f, 0.0f, 3.0f }
-};
-
-std::vector<Vector3> propRightVertices = {
-    // Base
-    { 3.5f, 0.35f, 0.0f }, { 3.3f, -0.2f, -0.1f }, { 0.5f, 0.3f, 0.0f },
-    { 3.3f, -0.2f, -0.1f }, { 0.5f, -0.1f, 0.0f }, { 0.5f, 0.3f, 0.0f },
-
-    { 3.3f, -0.2f, -0.1f }, { 1.0f, -0.6f, -0.1f }, { 0.5f, -0.1f, 0.0f },
-
-    { 3.4f, 0.3f, 0.1f }, { 3.3f, -0.2f, -0.1f }, { 3.5f, 0.35f, 0.0f },
-
-    { 0.5f, 0.2f, 0.1f }, { 0.5f, 0.3f, 0.0f }, { 0.5f, -0.1f, 0.0f },
-
-    // Top
-    { 0.7f, 0.0f, 0.1f }, { 3.3f, -0.2f, -0.1f }, { 3.4f, 0.3f, 0.1f },
-    { 0.7f, 0.0f, 0.1f }, { 3.4f, 0.3f, 0.1f }, { 0.5f, 0.2f, 0.1f },
-    { 0.7f, 0.0f, 0.1f }, { 0.5f, -0.1f, 0.0f }, { 1.0f, -0.6f, -0.1f },
-    { 0.7f, 0.0f, 0.1f }, { 1.0f, -0.6f, -0.1f }, { 3.3f, -0.2f, -0.1f },
-    { 0.7f, 0.0f, 0.1f }, { 3.3f, -0.2f, -0.1f }, { 3.4f, 0.3f, 0.1f },
-    { 0.7f, 0.0f, 0.1f }, { 0.5f, 0.2f, 0.1f }, { 0.5f, -0.1f, 0.0f },
-
-    // Back
-    { 3.4f, 0.3f, 0.1f }, { 3.5f, 0.35f, 0.0f }, { 0.5f, 0.3f, 0.0f },
-    { 0.5f, 0.2f, 0.1f }, { 3.4f, 0.3f, 0.1f }, { 0.5f, 0.3f, 0.0f }
-};
-// TODO: MAKE PROP LEFT
+// Model texcoords and indices
 
 std::vector<unsigned short> housingIndices = GenerateHardSurfaceIndices(housingVertices.size());
 std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingIndices);
@@ -219,14 +22,13 @@ std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingI
 std::vector<unsigned short> armIndices = GenerateHardSurfaceIndices(armVertices.size());
 std::vector<Vector3> armNormals = CalculateNormals(armVertices, armIndices);
 
-// Drone Parameters
+std::vector<unsigned short> propRightIndices = GenerateHardSurfaceIndices(propRightVertices.size());
+std::vector<Vector3> propRightNormals = CalculateNormals(propRightVertices, propRightIndices);
 
-// Colours
-static Color housingColor = Color{ 255, 255, 255, 255 };
-static Color chassisColor = Color{ 128, 128, 128, 255 };
-static Color armColor = Color{ 25, 31, 52, 255 };
-static Color motorHousingColor = Color{ 0, 0, 0, 255 };
-static Color rotorShaftColor = Color{ 25, 31, 52, 255 };
+std::vector<unsigned short> propLeftIndices = GenerateHardSurfaceIndices(propLeftVertices.size());
+std::vector<Vector3> propLeftNormals = CalculateNormals(propLeftVertices, propLeftIndices);
+
+// Drone Parameters
 
 // Angles
 Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
@@ -249,6 +51,18 @@ Vector3 rotorShaftRotations[] = {
     Vector3{ 0.0f, 0.0f, 0.0f },
     Vector3{ 0.0f, 0.0f, 0.0f },
     Vector3{ 0.0f, 0.0f, 0.0f }
+};
+Vector3 propRightRotations[] = {
+    Vector3{ 90.0f, 0.0f, 0.0f },
+    Vector3{ 90.0f, 0.0f, 0.0f },
+    Vector3{ 90.0f, 0.0f, 180.0f },
+    Vector3{ 90.0f, 0.0f, 180.0f }
+};
+Vector3 propLeftRotations[] = {
+    Vector3{ 90.0f, 0.0f, 0.0f },
+    Vector3{ 90.0f, 0.0f, 0.0f },
+    Vector3{ 90.0f, 0.0f, 180.0f },
+    Vector3{ 90.0f, 0.0f, 180.0f }
 };
 
 // Positions
@@ -273,34 +87,32 @@ Vector3 rotorShaftPositions[] = {
     Vector3{ 0.0f, 0.0f, 0.0f },
     Vector3{ 0.0f, 0.0f, 0.0f }
 };
+Vector3 propRightPositions[] = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
+};
+Vector3 propLeftPositions[] = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
+};
 
 // Scales
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
-Vector3 armScales[]  = {
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f }
-};
-Vector3 motorHousingScales[]  = {
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f },
-    Vector3{ 0.5f, 0.5f, 0.5f }
-};
-Vector3 rotorShaftScales[] = {
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f },
-    Vector3{ 1.0f, 1.0f, 1.0f }
-};
+Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 motorHousingScale = Vector3{ 0.5f, 0.5f, 0.5f };
+Vector3 rotorShaftScale = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 propScale       = Vector3{ 0.9f, 0.9f, 0.9f };
 
 
 // Lighting uniforms
 Vector3 lightPos = { 20.0f, 20.0f, 20.0f };
 
-float ambientStrength = 0.3f;
+float ambientStrength = 0.4f;
 float specularStrength = 0.50f;
 float shininess = 200.0f;
 
@@ -322,28 +134,10 @@ typedef struct Drone {
     DronePart arms[4];
     DronePart motorHousings[4];
     DronePart rotorShafts[4];
+    DronePart propLefts[4];
+    DronePart propRights[4];
+
 } Drone;
-
-// Draw model relative to a world matrix
-static void DrawModelWithWorldMatrix(Model& model, const Matrix& world, Shader shader, Color tint = WHITE) {
-    Matrix prev = model.transform;
-    model.transform = world;
-
-    float color[4] =
-    {
-        tint.r / 255.0f,
-        tint.g / 255.0f,
-        tint.b / 255.0f,
-        tint.a / 255.0f
-    };
-
-    int baseColorLoc = GetShaderLocation(shader, "baseColor");
-    SetShaderValue(shader, baseColorLoc, color, SHADER_UNIFORM_VEC4);
-
-    DrawModel(model, Vector3{ 0.0f, 0.0f, 0.0f }, 1.0f, WHITE);
-
-    model.transform = prev;
-}
 
 // Init functions
 
@@ -369,7 +163,7 @@ static Drone InitDrone() {
     for (int i = 0; i < std::size(drone.arms); i++) {
         drone.arms[i].position = armPositions[i];
         drone.arms[i].rotation = armRotations[i];
-        drone.arms[i].scale = armScales[i];
+        drone.arms[i].scale = armScale;
     }
 
     for (DronePart motorHousing : drone.motorHousings) {
@@ -378,7 +172,7 @@ static Drone InitDrone() {
     for (int i = 0; i < std::size(drone.motorHousings); i++) {
         drone.motorHousings[i].position = motorHousingPositions[i];
         drone.motorHousings[i].rotation = motorHousingRotations[i];
-        drone.motorHousings[i].scale = motorHousingScales[i];
+        drone.motorHousings[i].scale = motorHousingScale;
     }
 
     for (DronePart rotorShaft : drone.rotorShafts) {
@@ -387,9 +181,26 @@ static Drone InitDrone() {
     for (int i = 0; i < std::size(drone.rotorShafts); i++) {
         drone.rotorShafts[i].position = rotorShaftPositions[i];
         drone.rotorShafts[i].rotation = rotorShaftRotations[i];
-        drone.rotorShafts[i].scale = rotorShaftScales[i];
+        drone.rotorShafts[i].scale = rotorShaftScale;
     }
 
+    for (DronePart propRight : drone.propRights) {
+        propRight.color = propColor;
+    }
+    for (int i = 0; i < std::size(drone.propRights); i++) {
+        drone.propRights[i].position = propRightPositions[i];
+        drone.propRights[i].rotation = propRightRotations[i];
+        drone.propRights[i].scale = propScale;
+    }
+
+    for (DronePart propLeft : drone.propLefts) {
+        propLeft.color = propColor;
+    }
+    for (int i = 0; i < std::size(drone.propLefts); i++) {
+        drone.propLefts[i].position = propLeftPositions[i];
+        drone.propLefts[i].rotation = propLeftRotations[i];
+        drone.propLefts[i].scale = propScale;
+    }
 
     return drone;
 }
@@ -405,8 +216,6 @@ Camera3D InitCamera() {
 
     return camera;
 }
-
-// Draw and custom mesh functions
 
 static void DrawAxes(float len) {
     DrawLine3D({0, 0, 0}, {len, 0, 0}, RED);
@@ -433,6 +242,8 @@ int main(void) {
     Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
     Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
     Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);
+    Mesh propRightMesh = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
+    Mesh propLeftMesh = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
 
     // Models
     Model housingModel = LoadModelFromMesh(housingMesh);
@@ -440,6 +251,8 @@ int main(void) {
     Model armModel     = LoadModelFromMesh(armMesh);
     Model motorHousingModel = LoadModelFromMesh(motorHousingMesh);
     Model rotorShaftModel    = LoadModelFromMesh(rotorShaftMesh);
+    Model propRightModel = LoadModelFromMesh(propRightMesh);
+    Model propLeftModel = LoadModelFromMesh(propLeftMesh);
 
     // Shader
     Shader lighting = LoadShaderFromMemory(lightingVs, lightingFs);
@@ -449,6 +262,8 @@ int main(void) {
     armModel.materials[0].shader       = lighting;
     motorHousingModel.materials[0].shader = lighting;
     rotorShaftModel.materials[0].shader   = lighting;
+    propRightModel.materials[0].shader = lighting;
+    propLeftModel.materials[0].shader = lighting;
 
     int baseColorLoc = GetShaderLocation(lighting, "baseColor");
 
@@ -464,17 +279,30 @@ int main(void) {
 
         // Key listeners
         
+        float pitch = drone.rotation.x * DEG2RAD;
+        float yaw = drone.rotation.y * DEG2RAD;
+        float roll = drone.rotation.z * DEG2RAD;
+
+        Vector3 forwardVec = GetForwardVector(yaw);
+        Vector3 rightVec = GetRightVector(yaw);
+
+        float moveDistance = DRONE_SPEED * GetFrameTime();
+
         if (IsKeyDown(KEY_W)) {
-            drone.position.z += 5.0f * GetFrameTime();
+            Matrix transform = Translate(ScaleVector(forwardVec, moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
         if (IsKeyDown(KEY_A)) {
-            drone.position.x -= 5.0f * GetFrameTime();
+            Matrix transform = Translate(ScaleVector(rightVec, moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
         if (IsKeyDown(KEY_S)) {
-            drone.position.z -= 5.0f * GetFrameTime();
+            Matrix transform = Translate(ScaleVector(forwardVec, -moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
         if (IsKeyDown(KEY_D)) {
-            drone.position.x += 5.0f * GetFrameTime();
+            Matrix transform = Translate(ScaleVector(rightVec, -moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
         if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
             drone.position.y -= 5.0f * GetFrameTime();
@@ -483,17 +311,11 @@ int main(void) {
             drone.position.y += 5.0f * GetFrameTime();
         }
 
-        if (IsKeyDown(KEY_RIGHT)) {
+        if (IsKeyDown(KEY_E)) {
             drone.rotation.y += 45.0f * GetFrameTime();
         }
-        if (IsKeyDown(KEY_LEFT)) {
+        if (IsKeyDown(KEY_Q)) {
             drone.rotation.y -= 45.0f * GetFrameTime();
-        }
-        if (IsKeyDown(KEY_UP)) {
-            drone.rotation.x += 45.0f * GetFrameTime();
-        }
-        if (IsKeyDown(KEY_DOWN)) {
-            drone.rotation.x -= 45.0f * GetFrameTime();
         }
 
         // Init shader uniforms
@@ -581,6 +403,32 @@ int main(void) {
             );
         }
 
+        Matrix propRightWorlds[std::size(drone.propRights)];
+        for (int i = 0; i < std::size(drone.propRights); i++) {
+            propRightWorlds[i] = 
+                ParentChild(
+                rotorShaftWorlds[(i % 2) + 2],
+                TRS(
+                    drone.propRights[i].position,
+                    drone.propRights[i].rotation,
+                    drone.propRights[i].scale
+                )
+            );
+        }
+
+        Matrix propLeftWorlds[std::size(drone.propLefts)];
+        for (int i = 0; i < std::size(drone.propLefts); i++) {
+            propLeftWorlds[i] = 
+                ParentChild(
+                rotorShaftWorlds[i % 2],
+                TRS(
+                    drone.propLefts[i].position,
+                    drone.propLefts[i].rotation,
+                    drone.propLefts[i].scale
+                )
+            );
+        }
+
         BeginDrawing();
             ClearBackground(RAYWHITE);
 
@@ -597,6 +445,12 @@ int main(void) {
                 }
                 for (Matrix rotorShaftWorld: rotorShaftWorlds) {
                     DrawModelWithWorldMatrix(rotorShaftModel, rotorShaftWorld, lighting, rotorShaftColor);
+                }
+                for (Matrix propRightWorld: propRightWorlds) {
+                    DrawModelWithWorldMatrix(propRightModel, propRightWorld, lighting, propColor);
+                }
+                for (Matrix propLeftWorld: propLeftWorlds) {
+                    DrawModelWithWorldMatrix(propLeftModel, propLeftWorld, lighting, propColor);
                 }
 
                 DrawGrid(100, 1.0f);

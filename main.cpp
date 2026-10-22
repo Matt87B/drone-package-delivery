@@ -188,7 +188,7 @@ std::vector<Vector3> armVertices = {
     { 0.5f, 0.0f, 3.0f }, { 0.7f, -0.15f, 3.0f }, { 0.75f, 0.0f, 3.0f }
 };
 
-std::vector<Vector3> propellerVertices = {
+std::vector<Vector3> propRightVertices = {
     // Base
     { 3.5f, 0.35f, 0.0f }, { 3.3f, -0.2f, -0.1f }, { 0.5f, 0.3f, 0.0f },
     { 3.3f, -0.2f, -0.1f }, { 0.5f, -0.1f, 0.0f }, { 0.5f, 0.3f, 0.0f },
@@ -209,8 +209,9 @@ std::vector<Vector3> propellerVertices = {
 
     // Back
     { 3.4f, 0.3f, 0.1f }, { 3.5f, 0.35f, 0.0f }, { 0.5f, 0.3f, 0.0f },
-    { 0.5f, 0.2f, 0.1f }, { 3.4f, 0.3f, 0.1f }, { 0.5f, 0.3f, 0.0f}
+    { 0.5f, 0.2f, 0.1f }, { 3.4f, 0.3f, 0.1f }, { 0.5f, 0.3f, 0.0f }
 };
+// TODO: MAKE PROP LEFT
 
 std::vector<unsigned short> housingIndices = GenerateHardSurfaceIndices(housingVertices.size());
 std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingIndices);
@@ -218,16 +219,14 @@ std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingI
 std::vector<unsigned short> armIndices = GenerateHardSurfaceIndices(armVertices.size());
 std::vector<Vector3> armNormals = CalculateNormals(armVertices, armIndices);
 
-std::vector<unsigned short> propellerIndices = GenerateHardSurfaceIndices(propellerVertices.size());
-std::vector<Vector3> propellerNormals = CalculateNormals(propellerVertices, propellerIndices);
-
 // Drone Parameters
 
 // Colours
 static Color housingColor = Color{ 255, 255, 255, 255 };
 static Color chassisColor = Color{ 128, 128, 128, 255 };
 static Color armColor = Color{ 25, 31, 52, 255 };
-static Color propellerColor = Color{ 0, 0, 0, 255 };
+static Color motorHousingColor = Color{ 0, 0, 0, 255 };
+static Color rotorShaftColor = Color{ 25, 31, 52, 255 };
 
 // Angles
 Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
@@ -239,36 +238,40 @@ Vector3 armRotations[] = {
     Vector3{ -90.0f, -90.0f, 0.0f },
     Vector3{ -90.0f, -90.0f, 0.0f }
 };
-Vector3 propellerRotations[] = {
-    Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ -90.0f, 180.0f, 0.0f },
-    Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ -90.0f, 180.0f, 0.0f },
-    Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ -90.0f, 180.0f, 0.0f },
-    Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ -90.0f, 180.0f, 0.0f }
+Vector3 motorHousingRotations[] = {
+    Vector3{ 0.0f, 0.0f, 90.0f },
+    Vector3{ 0.0f, 0.0f, 90.0f },
+    Vector3{ 0.0f, 0.0f, 90.0f },
+    Vector3{ 0.0f, 0.0f, 90.0f }
+};
+Vector3 rotorShaftRotations[] = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
 };
 
 // Positions
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
-Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 2.0f };
+Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 armPositions[]  = {
     Vector3{ 1.0f, 0.0f, 1.5f },
     Vector3{ 1.0f, 0.0f, -1.5f },
     Vector3{ -1.0f, 0.0f, 1.5f },
     Vector3{ -1.0f, 0.0f, -1.5f }
 };
-Vector3 propellerPositions[] = {
-    Vector3{ 4.0f, 0.9f, 1.5f },
-    Vector3{ 4.0f, 0.9f, 1.5f },
-    Vector3{ 4.0f, 0.9f, -1.5f },
-    Vector3{ 4.0f, 0.9f, -1.5f },
-    Vector3{ -4.0f, 0.9f, 1.5f },
-    Vector3{ -4.0f, 0.9f, 1.5f },
-    Vector3{ -4.0f, 0.9f, -1.5f },
-    Vector3{ -4.0f, 0.9f, -1.5f }
+Vector3 motorHousingPositions[] = {
+    Vector3{ 0.75f, 0.0f, 3.0f },
+    Vector3{ 0.75f, 0.0f, 3.0f },
+    Vector3{ 0.75f, 0.0f, 3.0f },
+    Vector3{ 0.75f, 0.0f, 3.0f }
+};
+Vector3 rotorShaftPositions[] = {
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f },
+    Vector3{ 0.0f, 0.0f, 0.0f }
 };
 
 // Scales
@@ -280,15 +283,17 @@ Vector3 armScales[]  = {
     Vector3{ 1.0f, 1.0f, 1.0f },
     Vector3{ 1.0f, 1.0f, 1.0f }
 };
-Vector3 propellerScales[]  = {
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f },
-    Vector3{ 0.6f, 0.6f, 0.6f }
+Vector3 motorHousingScales[]  = {
+    Vector3{ 0.5f, 0.5f, 0.5f },
+    Vector3{ 0.5f, 0.5f, 0.5f },
+    Vector3{ 0.5f, 0.5f, 0.5f },
+    Vector3{ 0.5f, 0.5f, 0.5f }
+};
+Vector3 rotorShaftScales[] = {
+    Vector3{ 1.0f, 1.0f, 1.0f },
+    Vector3{ 1.0f, 1.0f, 1.0f },
+    Vector3{ 1.0f, 1.0f, 1.0f },
+    Vector3{ 1.0f, 1.0f, 1.0f }
 };
 
 
@@ -315,7 +320,8 @@ typedef struct Drone {
     DronePart chassis;
     DronePart housing;
     DronePart arms[4];
-    DronePart propellers[8];
+    DronePart motorHousings[4];
+    DronePart rotorShafts[4];
 } Drone;
 
 // Draw model relative to a world matrix
@@ -366,13 +372,22 @@ static Drone InitDrone() {
         drone.arms[i].scale = armScales[i];
     }
 
-    for (DronePart propeller : drone.propellers) {
-        propeller.color = propellerColor;
+    for (DronePart motorHousing : drone.motorHousings) {
+        motorHousing.color = motorHousingColor;
     }
-    for (int i = 0; i < std::size(drone.propellers); i++) {
-        drone.propellers[i].position = propellerPositions[i];
-        drone.propellers[i].rotation = propellerRotations[i];
-        drone.propellers[i].scale = propellerScales[i];
+    for (int i = 0; i < std::size(drone.motorHousings); i++) {
+        drone.motorHousings[i].position = motorHousingPositions[i];
+        drone.motorHousings[i].rotation = motorHousingRotations[i];
+        drone.motorHousings[i].scale = motorHousingScales[i];
+    }
+
+    for (DronePart rotorShaft : drone.rotorShafts) {
+        rotorShaft.color = rotorShaftColor;
+    }
+    for (int i = 0; i < std::size(drone.rotorShafts); i++) {
+        drone.rotorShafts[i].position = rotorShaftPositions[i];
+        drone.rotorShafts[i].rotation = rotorShaftRotations[i];
+        drone.rotorShafts[i].scale = rotorShaftScales[i];
     }
 
 
@@ -413,24 +428,27 @@ int main(void) {
     SetTargetFPS(60);
 
     // Meshes
-    Mesh droneHousingMesh   = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
-    Mesh droneChassisMesh   = GenMeshCube(0.75f, 0.75f, 0.5f);
-    Mesh droneArmMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
-    Mesh dronePropellerMesh = CreateCustomMesh(propellerVertices, propellerNormals, propellerIndices);
+    Mesh housingMesh   = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
+    Mesh chassisMesh   = GenMeshCube(0.75f, 0.75f, 0.5f);
+    Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
+    Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
+    Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);
 
     // Models
-    Model droneHousingModel = LoadModelFromMesh(droneHousingMesh);
-    Model droneChassisModel = LoadModelFromMesh(droneChassisMesh);
-    Model droneArmModel     = LoadModelFromMesh(droneArmMesh);
-    Model dronePropellerModel = LoadModelFromMesh(dronePropellerMesh);
+    Model housingModel = LoadModelFromMesh(housingMesh);
+    Model chassisModel = LoadModelFromMesh(chassisMesh);
+    Model armModel     = LoadModelFromMesh(armMesh);
+    Model motorHousingModel = LoadModelFromMesh(motorHousingMesh);
+    Model rotorShaftModel    = LoadModelFromMesh(rotorShaftMesh);
 
     // Shader
     Shader lighting = LoadShaderFromMemory(lightingVs, lightingFs);
 
-    droneHousingModel.materials[0].shader   = lighting;
-    droneChassisModel.materials[0].shader   = lighting;
-    droneArmModel.materials[0].shader       = lighting;
-    dronePropellerModel.materials[0].shader      = lighting;
+    housingModel.materials[0].shader   = lighting;
+    chassisModel.materials[0].shader   = lighting;
+    armModel.materials[0].shader       = lighting;
+    motorHousingModel.materials[0].shader = lighting;
+    rotorShaftModel.materials[0].shader   = lighting;
 
     int baseColorLoc = GetShaderLocation(lighting, "baseColor");
 
@@ -445,25 +463,26 @@ int main(void) {
     while (!WindowShouldClose()) {
 
         // Key listeners
-
-        if (IsKeyDown(KEY_A)) {
-            drone.position.x -= 45.0f * GetFrameTime();
+        
+        if (IsKeyDown(KEY_W)) {
+            drone.position.z += 5.0f * GetFrameTime();
         }
-        if (IsKeyDown(KEY_D)) {
-            drone.position.x += 45.0f * GetFrameTime();
+        if (IsKeyDown(KEY_A)) {
+            drone.position.x -= 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_S)) {
-            drone.position.z -= 45.0f * GetFrameTime();
+            drone.position.z -= 5.0f * GetFrameTime();
         }
-        if (IsKeyDown(KEY_W)) {
-            drone.position.z += 45.0f * GetFrameTime();
+        if (IsKeyDown(KEY_D)) {
+            drone.position.x += 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
-            drone.position.y -= 45.0f * GetFrameTime();
+            drone.position.y -= 5.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_SPACE)) {
-            drone.position.y += 45.0f * GetFrameTime();
+            drone.position.y += 5.0f * GetFrameTime();
         }
+
         if (IsKeyDown(KEY_RIGHT)) {
             drone.rotation.y += 45.0f * GetFrameTime();
         }
@@ -515,7 +534,7 @@ int main(void) {
 
         Matrix chassisWorld =
             ParentChild(
-                droneWorld,
+                housingWorld,
                 TRS(
                     drone.chassis.position,
                     drone.chassis.rotation,
@@ -527,7 +546,7 @@ int main(void) {
         for (int i = 0; i < std::size(drone.arms); i++) {
             armWorlds[i] = 
                 ParentChild(
-                housingWorld,
+                chassisWorld,
                 TRS(
                     drone.arms[i].position,
                     drone.arms[i].rotation,
@@ -536,15 +555,28 @@ int main(void) {
             );
         }
 
-        Matrix propellerWorlds[std::size(drone.propellers)];
-        for (int i = 0; i < std::size(drone.propellers); i++) {
-            propellerWorlds[i] = 
+        Matrix motorHousingWorlds[std::size(drone.motorHousings)];
+        for (int i = 0; i < std::size(drone.motorHousings); i++) {
+            motorHousingWorlds[i] = 
                 ParentChild(
-                housingWorld,
+                armWorlds[i],
                 TRS(
-                    drone.propellers[i].position,
-                    drone.propellers[i].rotation,
-                    drone.propellers[i].scale
+                    drone.motorHousings[i].position,
+                    drone.motorHousings[i].rotation,
+                    drone.motorHousings[i].scale
+                )
+            );
+        }
+
+        Matrix rotorShaftWorlds[std::size(drone.rotorShafts)];
+        for (int i = 0; i < std::size(drone.rotorShafts); i++) {
+            rotorShaftWorlds[i] =
+                ParentChild(
+                motorHousingWorlds[i],
+                TRS(
+                    drone.rotorShafts[i].position,
+                    drone.rotorShafts[i].rotation,
+                    drone.rotorShafts[i].scale
                 )
             );
         }
@@ -555,13 +587,16 @@ int main(void) {
             BeginMode3D(camera);
                 
                 // Draw all 3D geometry here
-                DrawModelWithWorldMatrix(droneHousingModel, housingWorld, lighting, housingColor);
-                DrawModelWithWorldMatrix(droneChassisModel, chassisWorld, lighting, chassisColor);
+                DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
+                DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
                 for (Matrix armWorld : armWorlds) {
-                    DrawModelWithWorldMatrix(droneArmModel, armWorld, lighting, armColor);
+                    DrawModelWithWorldMatrix(armModel, armWorld, lighting, armColor);
                 }
-                for (Matrix propellerWorld : propellerWorlds) {
-                    DrawModelWithWorldMatrix(dronePropellerModel, propellerWorld, lighting, propellerColor);
+                for (Matrix motorHousingWorld : motorHousingWorlds) {
+                    DrawModelWithWorldMatrix(motorHousingModel, motorHousingWorld, lighting, motorHousingColor);
+                }
+                for (Matrix rotorShaftWorld: rotorShaftWorlds) {
+                    DrawModelWithWorldMatrix(rotorShaftModel, rotorShaftWorld, lighting, rotorShaftColor);
                 }
 
                 DrawGrid(100, 1.0f);

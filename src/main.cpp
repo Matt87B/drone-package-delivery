@@ -144,8 +144,8 @@ typedef struct Drone {
 
 } Drone;
 
-static void updateDrone(float dt, Drone drone) {
-    
+static void updateDrone(Drone& drone, float dt) {
+    drone.rotorShafts[0].rotation.y -= 1500.0f * dt;
 }
 
 // Init functions
@@ -287,7 +287,8 @@ int main(void) {
     // Game loop
     while (!WindowShouldClose()) {
         // Key listeners
-        
+        updateDrone(drone, GetFrameTime());
+
         float pitch = drone.rotation.x * DEG2RAD;
         float yaw = drone.rotation.y * DEG2RAD;
         float roll = drone.rotation.z * DEG2RAD;

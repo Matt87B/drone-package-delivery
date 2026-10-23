@@ -149,6 +149,14 @@ Vector3 GetRightVector(float yaw) {
     return right;
 }
 
+Vector3 GetUpVector(float pitch, float yaw) {
+    Vector3 up;
+    up.x = sinf(pitch) * sinf(yaw);
+    up.y = cosf(pitch);
+    up.z = sinf(pitch) * cosf(yaw);
+    return up;
+}
+
 Vector3 ScaleVector(Vector3 v, float factor) {
     return Vector3 { v.x * factor, v.y * factor, v.z * factor };
 }

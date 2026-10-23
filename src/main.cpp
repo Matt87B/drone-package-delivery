@@ -14,6 +14,11 @@
 #define SCREEN_HEIGHT 1080
 #define DRONE_SPEED 10.0f
 
+// TODO: add physics based drone movement with thrust
+//const Vector3 GRAVITY = Vector3{ 0.0f, -9.81f, 0.0f };
+//const float MASS = 1.5f;
+//const float INERTIA = Vector3{ 0.015f, 0.015f, 0.015f };
+
 // Model texcoords and indices
 
 std::vector<unsigned short> housingIndices = GenerateHardSurfaceIndices(housingVertices.size());
@@ -138,6 +143,10 @@ typedef struct Drone {
     DronePart propRights[4];
 
 } Drone;
+
+static void updateDrone(float dt, Drone drone) {
+    
+}
 
 // Init functions
 
@@ -275,8 +284,8 @@ int main(void) {
     int specularLoc = GetShaderLocation(lighting, "specularStrength");
     int shininessLoc = GetShaderLocation(lighting, "shininess");
 
+    // Game loop
     while (!WindowShouldClose()) {
-
         // Key listeners
         
         float pitch = drone.rotation.x * DEG2RAD;
@@ -285,6 +294,7 @@ int main(void) {
 
         Vector3 forwardVec = GetForwardVector(yaw);
         Vector3 rightVec = GetRightVector(yaw);
+        Vector3 upVec = GetUpVector(pitch, yaw);
 
         float moveDistance = DRONE_SPEED * GetFrameTime();
 
@@ -304,18 +314,19 @@ int main(void) {
             Matrix transform = Translate(ScaleVector(rightVec, -moveDistance));
             drone.position = TransformPoint(drone.position, transform);
         }
-        if (IsKeyDown(KEY_C) || IsKeyDown(KEY_LEFT_CONTROL)) {
-            drone.position.y -= 5.0f * GetFrameTime();
+        if (IsKeyDown(KEY_R)) {
+            Matrix transform = Translate(ScaleVector(upVec, moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
-        if (IsKeyDown(KEY_SPACE)) {
-            drone.position.y += 5.0f * GetFrameTime();
+        if (IsKeyDown(KEY_F) || IsKeyDown(KEY_LEFT_CONTROL)) {
+            Matrix transform = Translate(ScaleVector(upVec, -moveDistance));
+            drone.position = TransformPoint(drone.position, transform);
         }
-
         if (IsKeyDown(KEY_E)) {
-            drone.rotation.y += 45.0f * GetFrameTime();
+            drone.rotation.y -= 45.0f * GetFrameTime();
         }
         if (IsKeyDown(KEY_Q)) {
-            drone.rotation.y -= 45.0f * GetFrameTime();
+            drone.rotation.y += 45.0f * GetFrameTime();
         }
 
         // Init shader uniforms

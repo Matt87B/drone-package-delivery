@@ -8,6 +8,7 @@
 // Workspace imports
 #include "mesh_utils.h"
 #include "mat_utils.h"
+#include "drone_utils.h"
 #include "resources.h"
 
 #define SCREEN_WIDTH 1920
@@ -120,33 +121,6 @@ Vector3 lightPos = { 20.0f, 20.0f, 20.0f };
 float ambientStrength = 0.4f;
 float specularStrength = 0.50f;
 float shininess = 200.0f;
-
-// Custom structs for Drone
-typedef struct DronePart {
-    Vector3 position; // Position relative to parent position
-    Vector3 rotation; // Pitch, Yaw, Roll
-    Vector3 scale = Vector3{ 1.0f, 1.0f, 1.0f };
-
-    Color color;
-} DronePart;
-
-typedef struct Drone {
-    Vector3 position; // World position of drone
-    Vector3 rotation; // World rotation of drone
-
-    DronePart chassis;
-    DronePart housing;
-    DronePart arms[4];
-    DronePart motorHousings[4];
-    DronePart rotorShafts[4];
-    DronePart propLefts[4];
-    DronePart propRights[4];
-
-} Drone;
-
-static void updateDrone(Drone& drone, float dt) {
-    drone.rotorShafts[0].rotation.y -= 1500.0f * dt;
-}
 
 // Init functions
 

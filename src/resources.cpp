@@ -204,8 +204,8 @@ std::vector<Vector3> housingVertices = {
 
 std::vector<Vector3> chassisVertices = {
     // Back
-    { 0.8f, 0.5f, -0.2f}, { -0.8f, 0.5f, -0.2f }, { }
-}
+    
+};
 
 std::vector<Vector3> armVertices = {
     // Back cap

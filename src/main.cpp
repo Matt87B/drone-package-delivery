@@ -40,10 +40,10 @@ Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 armRotations[] = {
-    Vector3{ 90.0f, 90.0f, 0.0f },
-    Vector3{ 90.0f, 90.0f, 0.0f },
-    Vector3{ -90.0f, -90.0f, 0.0f },
-    Vector3{ -90.0f, -90.0f, 0.0f }
+    Vector3{ 0.0f, 80.0f, 90.0f },
+    Vector3{ 0.0f, 110.0f, 90.0f },
+    Vector3{ 0.0f, -80.0f, 90.0f },
+    Vector3{ 0.0f, -110.0f, 90.0f }
 };
 Vector3 motorHousingRotations[] = {
     Vector3{ 0.0f, 0.0f, 90.0f },
@@ -111,7 +111,7 @@ Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 motorHousingScale = Vector3{ 0.5f, 0.5f, 0.5f };
 Vector3 rotorShaftScale = Vector3{ 1.0f, 1.0f, 1.0f };
-Vector3 propScale       = Vector3{ 0.9f, 0.9f, 0.9f };
+Vector3 propScale       = Vector3{ 1.4f, 1.0f, 1.4f };
 
 
 // Lighting uniforms

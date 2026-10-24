@@ -446,7 +446,7 @@ int main(void) {
 
             BeginMode3D(camera);
                 
-                // Draw all 3D geometry here
+                // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
                 DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
                 for (Matrix armWorld : armWorlds) {

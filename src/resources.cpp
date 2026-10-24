@@ -201,6 +201,12 @@ std::vector<Vector3> housingVertices = {
     { -0.9f, 0.0f, -1.0f }, { -0.9f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f },
     { -0.9f, 0.0f, -1.0f }, { -1.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, -1.0f }
 };
+
+std::vector<Vector3> chassisVertices = {
+    // Back
+    { 0.8f, 0.5f, -0.2f}, { -0.8f, 0.5f, -0.2f }, { }
+}
+
 std::vector<Vector3> armVertices = {
     // Back cap
     { 0.0f, 0.25f, 0.0f }, { 0.25f, 0.0f, 0.0f }, { -0.25f, 0.0f, 0.0f },

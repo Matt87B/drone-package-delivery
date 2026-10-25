@@ -19,6 +19,7 @@ extern Color propColor;
 
 extern std::vector<Vector3> housingVertices;
 extern std::vector<Vector3> armVertices;
+extern std::vector<Vector3> chassisVertices;
 extern std::vector<Vector3> propRightVertices;
 extern std::vector<Vector3> propLeftVertices;
 

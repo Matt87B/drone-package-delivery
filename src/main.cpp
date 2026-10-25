@@ -28,6 +28,9 @@ std::vector<Vector3> housingNormals = CalculateNormals(housingVertices, housingI
 std::vector<unsigned short> armIndices = GenerateHardSurfaceIndices(armVertices.size());
 std::vector<Vector3> armNormals = CalculateNormals(armVertices, armIndices);
 
+std::vector<unsigned short> chassisIndices = GenerateHardSurfaceIndices(chassisVertices.size());
+std::vector<Vector3> chassisNormals = CalculateNormals(chassisVertices, chassisIndices);
+
 std::vector<unsigned short> propRightIndices = GenerateHardSurfaceIndices(propRightVertices.size());
 std::vector<Vector3> propRightNormals = CalculateNormals(propRightVertices, propRightIndices);
 
@@ -221,7 +224,7 @@ int main(void) {
 
     // Meshes
     Mesh housingMesh   = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
-    Mesh chassisMesh   = GenMeshCube(0.75f, 0.75f, 0.5f);
+    Mesh chassisMesh   = CreateCustomMesh(chassisVertices, chassisNormals, chassisIndices);
     Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
     Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
     Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);

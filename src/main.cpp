@@ -77,12 +77,12 @@ Vector3 propLeftRotations[] = {
 // Positions
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
-Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, -0.2f };
 Vector3 armPositions[]  = {
-    Vector3{ 1.0f, 0.0f, 1.5f },
-    Vector3{ 1.0f, 0.0f, -1.5f },
-    Vector3{ -1.0f, 0.0f, 1.5f },
-    Vector3{ -1.0f, 0.0f, -1.5f }
+    Vector3{ 1.0f, 0.2f, 1.5f },
+    Vector3{ 1.0f, 0.2f, -1.5f },
+    Vector3{ -1.0f, 0.2f, 1.5f },
+    Vector3{ -1.0f, 0.2f, -1.5f }
 };
 Vector3 motorHousingPositions[] = {
     Vector3{ 0.75f, 0.0f, 3.0f },
@@ -111,7 +111,7 @@ Vector3 propLeftPositions[] = {
 
 // Scales
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
-Vector3 chassisScale    = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 chassisScale    = Vector3{ 0.9f, 0.5f, 1.2f };
 Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 motorHousingScale = Vector3{ 0.5f, 0.5f, 0.5f };
 Vector3 rotorShaftScale = Vector3{ 1.0f, 1.0f, 1.0f };
@@ -357,7 +357,7 @@ int main(void) {
         for (int i = 0; i < std::size(drone.arms); i++) {
             armWorlds[i] = 
                 ParentChild(
-                chassisWorld,
+                housingWorld,
                 TRS(
                     drone.arms[i].position,
                     drone.arms[i].rotation,

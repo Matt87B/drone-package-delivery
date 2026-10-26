@@ -2,6 +2,7 @@
 #define DRONE_UTILS_H
 
 #include "raylib.h"
+
 // Custom structs for Drone
 typedef struct DronePart {
     Vector3 position; // Position relative to parent position
@@ -15,6 +16,8 @@ typedef struct Drone {
     Vector3 position; // World position of drone
     Vector3 rotation; // World rotation of drone
 
+    float currentRotorSpeed = 0.0f;
+
     DronePart chassis;
     DronePart housing;
     DronePart arms[4];
@@ -24,7 +27,5 @@ typedef struct Drone {
     DronePart propRights[4];
 
 } Drone;
-
-void updateDrone(Drone& drone, float dt);
 
 #endif

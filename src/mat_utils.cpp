@@ -160,3 +160,9 @@ Vector3 GetUpVector(float pitch, float yaw) {
 Vector3 ScaleVector(Vector3 v, float factor) {
     return Vector3 { v.x * factor, v.y * factor, v.z * factor };
 }
+
+float SmoothStepLerp(float current, float target, float speed) {
+    float t = Clamp(speed, 0.0f, 1.0f);
+    t = t * t * (3.0f - 2.0f * t);
+    return Lerp(current, target, t);
+}

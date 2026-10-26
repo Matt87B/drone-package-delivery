@@ -21,5 +21,6 @@ Vector3 GetForwardVector(float yaw);
 Vector3 GetRightVector(float yaw);
 Vector3 GetUpVector(float pitch, float yaw);
 Vector3 ScaleVector(Vector3 v, float factor);
+float SmoothStepLerp(float current, float target, float speed);
 
 #endif

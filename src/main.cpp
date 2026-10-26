@@ -13,7 +13,16 @@
 
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
-#define DRONE_SPEED 10.0f
+
+#define DRONE_SPEED 5.0f
+#define DRONE_ROT_SPEED 30.0f
+#define CLIMB_SPEED 3.0f
+#define SLANT_OFFSET 10.0f
+#define SLANT_SPEED 15.0f
+#define ROTOR_SHAFT_MAX 3000.0f
+#define ROTOR_SHAFT_NORMAL 2500.0f
+#define ROTOR_SHAFT_MIN 2000.0f
+#define ROTOR_SHAFT_SPEED 10.0f
 
 // TODO: add physics based drone movement with thrust
 //const Vector3 GRAVITY = Vector3{ 0.0f, -9.81f, 0.0f };
@@ -264,7 +273,6 @@ int main(void) {
     // Game loop
     while (!WindowShouldClose()) {
         // Key listeners
-        updateDrone(drone, GetFrameTime());
 
         float pitch = drone.rotation.x * DEG2RAD;
         float yaw = drone.rotation.y * DEG2RAD;
@@ -275,36 +283,63 @@ int main(void) {
         Vector3 upVec = GetUpVector(pitch, yaw);
 
         float moveDistance = DRONE_SPEED * GetFrameTime();
+        float slantDistance = SLANT_SPEED * GetFrameTime();
+        float rotDistance = DRONE_ROT_SPEED * GetFrameTime();
+        float spinReactiveness = 0.8f;
+        float targetRotorSpeed = ROTOR_SHAFT_NORMAL;
+
+        Matrix transformPos = MatIdentity();
 
         if (IsKeyDown(KEY_W)) {
-            Matrix transform = Translate(ScaleVector(forwardVec, moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+            transformPos = MatMul(transformPos, Translate(ScaleVector(forwardVec, moveDistance)));
+            drone.rotation.x = SmoothStepLerp(drone.rotation.x, SLANT_OFFSET, slantDistance);
         }
+        else if (IsKeyDown(KEY_S)) {
+            transformPos = MatMul(transformPos, Translate(ScaleVector(forwardVec, -moveDistance)));
+            drone.rotation.x = SmoothStepLerp(drone.rotation.x, -SLANT_OFFSET, slantDistance);
+        }
+        else {
+            drone.rotation.x = SmoothStepLerp(drone.rotation.x, 0.0f, slantDistance);
+        }
+
         if (IsKeyDown(KEY_A)) {
-            Matrix transform = Translate(ScaleVector(rightVec, moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+            transformPos = MatMul(transformPos, Translate(ScaleVector(rightVec, moveDistance)));
+            drone.rotation.z = SmoothStepLerp(drone.rotation.z, -SLANT_OFFSET, slantDistance);
         }
-        if (IsKeyDown(KEY_S)) {
-            Matrix transform = Translate(ScaleVector(forwardVec, -moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+        else if (IsKeyDown(KEY_D)) {
+            transformPos = MatMul(transformPos, Translate(ScaleVector(rightVec, -moveDistance)));
+            drone.rotation.z = SmoothStepLerp(drone.rotation.z, SLANT_OFFSET, slantDistance);
         }
-        if (IsKeyDown(KEY_D)) {
-            Matrix transform = Translate(ScaleVector(rightVec, -moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+        else {
+            drone.rotation.z = SmoothStepLerp(drone.rotation.z, 0.0f, slantDistance);
         }
+
         if (IsKeyDown(KEY_R)) {
-            Matrix transform = Translate(ScaleVector(upVec, moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+            transformPos = MatMul(transformPos, Translate(ScaleVector(upVec, moveDistance)));
+            targetRotorSpeed = ROTOR_SHAFT_MAX;
         }
-        if (IsKeyDown(KEY_F) || IsKeyDown(KEY_LEFT_CONTROL)) {
-            Matrix transform = Translate(ScaleVector(upVec, -moveDistance));
-            drone.position = TransformPoint(drone.position, transform);
+        else if (IsKeyDown(KEY_F)) {
+            transformPos = MatMul(transformPos, Translate(ScaleVector(upVec, -moveDistance)));
+            targetRotorSpeed = ROTOR_SHAFT_MIN;
         }
+        else {
+            targetRotorSpeed = ROTOR_SHAFT_NORMAL;
+        }
+
+        drone.currentRotorSpeed = SmoothStepLerp(drone.currentRotorSpeed, targetRotorSpeed, spinReactiveness);
+        float rotorDelta = drone.currentRotorSpeed * GetFrameTime();
+
+        for (int i = 0; i < 4; i++) {
+            drone.rotorShafts[i].rotation.y += rotorDelta;
+        }
+
+        drone.position = TransformPoint(drone.position, transformPos);
+
         if (IsKeyDown(KEY_E)) {
-            drone.rotation.y -= 45.0f * GetFrameTime();
+            drone.rotation.y -= rotDistance;
         }
         if (IsKeyDown(KEY_Q)) {
-            drone.rotation.y += 45.0f * GetFrameTime();
+            drone.rotation.y += rotDistance;
         }
 
         // Init shader uniforms

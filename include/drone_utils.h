@@ -16,10 +16,11 @@ typedef struct Drone {
     Vector3 position; // World position of drone
     Vector3 rotation; // World rotation of drone
 
-    float currentRotorSpeed = 0.0f;
+    bool isActive = false;
 
     DronePart chassis;
     DronePart housing;
+    DronePart leg;
     DronePart arms[4];
     DronePart motorHousings[4];
     DronePart rotorShafts[4];
@@ -27,5 +28,7 @@ typedef struct Drone {
     DronePart propRights[4];
 
 } Drone;
+
+void ToggleActive(Drone& drone);
 
 #endif

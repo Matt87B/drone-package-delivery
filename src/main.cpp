@@ -16,13 +16,9 @@
 
 #define DRONE_SPEED 5.0f
 #define DRONE_ROT_SPEED 30.0f
-#define CLIMB_SPEED 3.0f
 #define SLANT_OFFSET 10.0f
 #define SLANT_SPEED 15.0f
-#define ROTOR_SHAFT_MAX 3000.0f
-#define ROTOR_SHAFT_NORMAL 2500.0f
-#define ROTOR_SHAFT_MIN 2000.0f
-#define ROTOR_SHAFT_SPEED 10.0f
+#define ROTOR_SHAFT_SPEED 100.0f
 
 // TODO: add physics based drone movement with thrust
 //const Vector3 GRAVITY = Vector3{ 0.0f, -9.81f, 0.0f };
@@ -52,6 +48,7 @@ std::vector<Vector3> propLeftNormals = CalculateNormals(propLeftVertices, propLe
 Vector3 droneRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 legRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 armRotations[] = {
     Vector3{ 0.0f, 80.0f, 90.0f },
     Vector3{ 0.0f, 110.0f, 90.0f },
@@ -87,6 +84,7 @@ Vector3 propLeftRotations[] = {
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, -0.2f };
+Vector3 legPosition = Vector3{ 0.0f, 0.0f, -0.5f };
 Vector3 armPositions[]  = {
     Vector3{ 1.0f, 0.2f, 1.5f },
     Vector3{ 1.0f, 0.2f, -1.5f },
@@ -122,6 +120,7 @@ Vector3 propLeftPositions[] = {
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 chassisScale    = Vector3{ 0.9f, 0.5f, 1.2f };
 Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 legScale        = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 motorHousingScale = Vector3{ 0.5f, 0.5f, 0.5f };
 Vector3 rotorShaftScale = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 propScale       = Vector3{ 1.4f, 1.0f, 1.4f };
@@ -151,6 +150,11 @@ static Drone InitDrone() {
     drone.housing.rotation = housingRotation;
     drone.housing.scale = housingScale;
     drone.housing.color = housingColor;
+
+    drone.leg.position = legPosition;
+    drone.leg.rotation = legRotation;
+    drone.leg.scale = legScale;
+    drone.leg.color = WHITE;
 
     for (DronePart arm : drone.arms) {
         arm.color = armColor;
@@ -236,6 +240,7 @@ int main(void) {
     Mesh chassisMesh   = CreateCustomMesh(chassisVertices, chassisNormals, chassisIndices);
     Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
     Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
+    Mesh legMesh         = GenMeshCube(0.2f, 0.8f, 0.2f);
     Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);
     Mesh propRightMesh = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
     Mesh propLeftMesh = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
@@ -243,6 +248,7 @@ int main(void) {
     // Models
     Model housingModel = LoadModelFromMesh(housingMesh);
     Model chassisModel = LoadModelFromMesh(chassisMesh);
+    Model legModel = LoadModelFromMesh(legMesh);
     Model armModel     = LoadModelFromMesh(armMesh);
     Model motorHousingModel = LoadModelFromMesh(motorHousingMesh);
     Model rotorShaftModel    = LoadModelFromMesh(rotorShaftMesh);
@@ -254,6 +260,7 @@ int main(void) {
 
     housingModel.materials[0].shader   = lighting;
     chassisModel.materials[0].shader   = lighting;
+    legModel.materials[0].shader        = lighting;
     armModel.materials[0].shader       = lighting;
     motorHousingModel.materials[0].shader = lighting;
     rotorShaftModel.materials[0].shader   = lighting;
@@ -274,6 +281,9 @@ int main(void) {
     while (!WindowShouldClose()) {
         // Key listeners
 
+        camera.target = drone.position;
+        camera.position = (Vector3){ drone.position.x, drone.position.y + 5.0f, drone.position.z - 10.0f };
+
         float pitch = drone.rotation.x * DEG2RAD;
         float yaw = drone.rotation.y * DEG2RAD;
         float roll = drone.rotation.z * DEG2RAD;
@@ -285,65 +295,93 @@ int main(void) {
         float moveDistance = DRONE_SPEED * GetFrameTime();
         float slantDistance = SLANT_SPEED * GetFrameTime();
         float rotDistance = DRONE_ROT_SPEED * GetFrameTime();
-        float spinReactiveness = 0.8f;
-        float targetRotorSpeed = ROTOR_SHAFT_NORMAL;
 
         Matrix transformPos = MatIdentity();
 
-        if (IsKeyDown(KEY_W)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(forwardVec, moveDistance)));
-            drone.rotation.x = SmoothStepLerp(drone.rotation.x, SLANT_OFFSET, slantDistance);
-        }
-        else if (IsKeyDown(KEY_S)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(forwardVec, -moveDistance)));
-            drone.rotation.x = SmoothStepLerp(drone.rotation.x, -SLANT_OFFSET, slantDistance);
-        }
-        else {
-            drone.rotation.x = SmoothStepLerp(drone.rotation.x, 0.0f, slantDistance);
+        if (drone.isActive) {
+
+            float forwardInput = 0.0f;
+            float rightInput = 0.0f;
+            Vector3 moveInput = { 0.0f, 0.0f, 0.0f };
+
+            // Movement on the x axis
+
+            if (IsKeyDown(KEY_W)) {
+                forwardInput += 1.0f;
+            }
+            else if (IsKeyDown(KEY_S)) {
+                forwardInput -= 1.0f;
+            }
+
+            if (IsKeyDown(KEY_A)) {
+                rightInput += 1.0f;
+            }
+            else if (IsKeyDown(KEY_D)) {
+                rightInput -= 1.0f;
+            }
+
+            moveInput = Vector3Add(moveInput, ScaleVector(forwardVec, forwardInput));
+            moveInput = Vector3Add(moveInput, ScaleVector(rightVec, rightInput));
+
+            // Movement on the y axis
+            
+            if (IsKeyDown(KEY_R)) {
+                moveInput = Vector3Add(moveInput, upVec);
+            }
+            else if (IsKeyDown(KEY_F)) {
+                moveInput = Vector3Subtract(moveInput, upVec);
+            }
+
+            // Normalize movement to prevent extra distance traveled on diagonals
+
+            if (Vector3Length(moveInput) > 0.0f) {
+                moveInput = Vector3Normalize(moveInput);
+            }
+
+            // Drone rotation
+            
+            if (IsKeyDown(KEY_E)) {
+                drone.rotation.y -= rotDistance;
+            }
+            if (IsKeyDown(KEY_Q)) {
+                drone.rotation.y += rotDistance;
+            }
+
+            // Propeller spin animation
+
+            for (int i = 0; i < 2; i++) {
+                drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED;
+            }
+            for (int i = 2; i < 4; i++) {
+                drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED;
+            }
+            
+            // Aggregate all inputs into a normalized vector
+            
+            Vector3 finalVelocity = ScaleVector(moveInput, moveDistance); 
+            drone.position = Vector3Add(drone.position, finalVelocity);
+
+            const float MAX_TILT = 20.0f; 
+            const float TILT_SMOOTHING = 8.0f;
+
+            float targetPitch = -forwardInput * MAX_TILT; 
+
+            float targetRoll = -rightInput * MAX_TILT; 
+
+            drone.rotation.x += (targetPitch - drone.rotation.x) * TILT_SMOOTHING * GetFrameTime();
+            drone.rotation.z += (targetRoll - drone.rotation.z) * TILT_SMOOTHING * GetFrameTime();
         }
 
-        if (IsKeyDown(KEY_A)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(rightVec, moveDistance)));
-            drone.rotation.z = SmoothStepLerp(drone.rotation.z, -SLANT_OFFSET, slantDistance);
-        }
-        else if (IsKeyDown(KEY_D)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(rightVec, -moveDistance)));
-            drone.rotation.z = SmoothStepLerp(drone.rotation.z, SLANT_OFFSET, slantDistance);
-        }
-        else {
-            drone.rotation.z = SmoothStepLerp(drone.rotation.z, 0.0f, slantDistance);
+        // Toggle drone active
+        if (IsKeyPressed(KEY_SPACE)) {
+            ToggleActive(drone);
         }
 
-        if (IsKeyDown(KEY_R)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(upVec, moveDistance)));
-            targetRotorSpeed = ROTOR_SHAFT_MAX;
-        }
-        else if (IsKeyDown(KEY_F)) {
-            transformPos = MatMul(transformPos, Translate(ScaleVector(upVec, -moveDistance)));
-            targetRotorSpeed = ROTOR_SHAFT_MIN;
-        }
-        else {
-            targetRotorSpeed = ROTOR_SHAFT_NORMAL;
-        }
-
-        drone.currentRotorSpeed = SmoothStepLerp(drone.currentRotorSpeed, targetRotorSpeed, spinReactiveness);
-        float rotorDelta = drone.currentRotorSpeed * GetFrameTime();
-
-        for (int i = 0; i < 4; i++) {
-            drone.rotorShafts[i].rotation.y += rotorDelta;
-        }
-
-        drone.position = TransformPoint(drone.position, transformPos);
-
-        if (IsKeyDown(KEY_E)) {
-            drone.rotation.y -= rotDistance;
-        }
-        if (IsKeyDown(KEY_Q)) {
-            drone.rotation.y += rotDistance;
+        if (IsKeyPressed(KEY_HOME)) {
+            drone = InitDrone();
         }
 
         // Init shader uniforms
-
         SetShaderValue(lighting, lightPosLoc, &lightPos, SHADER_UNIFORM_VEC3);
         SetShaderValue(lighting, viewPosLoc, &camera.position, SHADER_UNIFORM_VEC3);
         SetShaderValue(lighting, ambientLoc, &ambientStrength, SHADER_UNIFORM_FLOAT);
@@ -375,6 +413,16 @@ int main(void) {
                     drone.housing.position,
                     drone.housing.rotation,
                     drone.housing.scale
+                )
+            );
+        
+        Matrix legWorld =
+            ParentChild(
+                housingWorld,
+                TRS(
+                    drone.leg.position,
+                    drone.leg.rotation,
+                    drone.leg.scale
                 )
             );
 
@@ -461,6 +509,7 @@ int main(void) {
                 // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
                 DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
+                DrawModelWithWorldMatrix(legModel, housingWorld, lighting, housingColor);
                 for (Matrix armWorld : armWorlds) {
                     DrawModelWithWorldMatrix(armModel, armWorld, lighting, armColor);
                 }

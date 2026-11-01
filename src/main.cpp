@@ -19,12 +19,13 @@
 #define SLANT_OFFSET 10.0f
 #define SLANT_SPEED 2.0f
 #define ROTOR_SHAFT_SPEED 1500.0f
-#define MAX_TILT 20.0f 
+#define MAX_TILT 25.0f 
 
 #define DRONE_MASS 1.2f
-#define MAX_THRUST 25.0f
-#define LINEAR_DRAG 2.5f
-#define ANGULAR_DAMPENING 10.0f
+#define MAX_THRUST 35.0f
+#define LINEAR_DRAG 1.2f
+#define ANGULAR_DAMPENING 15.0f
+#define CLIMB_THRUST_POWER 16.0f
 
 // Model texcoords and indices
 
@@ -327,13 +328,16 @@ int main(void) {
             float targetPitch = forwardInput * MAX_TILT;
             float targetRoll = rightInput * MAX_TILT;
 
-            drone.rotation.x += (targetPitch - drone.rotation.x) * ANGULAR_DAMPENING * dt;
-            drone.rotation.z += (targetRoll - drone.rotation.z) * ANGULAR_DAMPENING * dt;
+            drone.rotation.x = SmoothStepLerp(drone.rotation.x, targetPitch, ANGULAR_DAMPENING * dt);
+            drone.rotation.z = SmoothStepLerp(drone.rotation.z, targetRoll, ANGULAR_DAMPENING * dt);
 
             // Physics logic
+            float tiltCompensation = 1.0f / (cosf(pitchRad) * cosf(rollRad));
+            tiltCompensation = Clamp(tiltCompensation, 1.0f, 1.5f);
+
             Vector3 gravityForce = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
-            float hoverThrust = 9.81f * DRONE_MASS;
-            float currentThrust = hoverThrust + (climbInput * 12.0f);
+            float hoverThrust = 9.81f * DRONE_MASS * tiltCompensation;
+            float currentThrust = hoverThrust + (climbInput * CLIMB_THRUST_POWER);
 
             Vector3 thrustForce = ScaleVector(upVec, currentThrust);
             Vector3 dragForce = ScaleVector(drone.velocity, -LINEAR_DRAG);

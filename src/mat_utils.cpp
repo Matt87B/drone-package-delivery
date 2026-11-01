@@ -99,7 +99,7 @@ Matrix MatRotation(float rx, float ry, float rz) {
     Matrix matY = MatRotationY(ry * DEG2RAD);
     Matrix matZ = MatRotationZ(rz * DEG2RAD);
 
-    return MatMul(MatMul(matX, matY), matZ);
+    return MatMul(matY, MatMul(matX, matZ));
 }
 
 // Wrappers for matrix operations
@@ -120,12 +120,12 @@ Matrix TRS(const Vector3& t, const Vector3& r, const Vector3& s) {
     Matrix T = Translate(t);
     Matrix R = Rotation(r);
     Matrix S = Scale(s);
-    return MatrixMultiply(MatrixMultiply(S, R), T);
+    return MatMul(T, MatMul(R, S));
 }
 
 // Assign a child matrix to a world
 Matrix ParentChild(const Matrix& parentWorld, const Matrix& childLocal) {
-    return MatrixMultiply(childLocal, parentWorld);
+    return MatMul(parentWorld, childLocal);
 }
 
 // Transform a vector in accordance with a given transformation matrix
@@ -143,17 +143,17 @@ Vector3 GetForwardVector(float yaw) {
 
 Vector3 GetRightVector(float yaw) {
     Vector3 right;
-    right.x = cosf(yaw);
+    right.x = -cosf(yaw);
     right.y = 0.0f;
-    right.z = -sinf(yaw);
+    right.z = sinf(yaw);
     return right;
 }
 
-Vector3 GetUpVector(float pitch, float yaw) {
+Vector3 GetUpVector(float pitch, float yaw, float roll) {
     Vector3 up;
-    up.x = sinf(pitch) * sinf(yaw);
-    up.y = cosf(pitch);
-    up.z = sinf(pitch) * cosf(yaw);
+    up.x = sinf(pitch) * sinf(yaw) * cosf(roll) - sinf(roll) * cosf(yaw);
+    up.y = cosf(pitch) * cosf(roll);
+    up.z = sinf(pitch) * cosf(yaw) * cosf(roll) + sinf(roll) * sinf(yaw);
     return up;
 }
 

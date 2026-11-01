@@ -17,13 +17,14 @@
 #define DRONE_SPEED 5.0f
 #define DRONE_ROT_SPEED 30.0f
 #define SLANT_OFFSET 10.0f
-#define SLANT_SPEED 15.0f
-#define ROTOR_SHAFT_SPEED 100.0f
+#define SLANT_SPEED 2.0f
+#define ROTOR_SHAFT_SPEED 1500.0f
+#define MAX_TILT 20.0f 
 
-// TODO: add physics based drone movement with thrust
-//const Vector3 GRAVITY = Vector3{ 0.0f, -9.81f, 0.0f };
-//const float MASS = 1.5f;
-//const float INERTIA = Vector3{ 0.015f, 0.015f, 0.015f };
+#define DRONE_MASS 1.2f
+#define MAX_THRUST 25.0f
+#define LINEAR_DRAG 2.5f
+#define ANGULAR_DAMPENING 10.0f
 
 // Model texcoords and indices
 
@@ -207,7 +208,7 @@ static Drone InitDrone() {
 // Initialize Camera3D
 Camera3D InitCamera() {
     Camera3D camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 10.0f, 10.0f };
+    camera.position = (Vector3) { 0.0f, 10.0f, -10.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, 0.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
@@ -216,11 +217,21 @@ Camera3D InitCamera() {
     return camera;
 }
 
-static void DrawAxes(float len) {
-    DrawLine3D({0, 0, 0}, {len, 0, 0}, RED);
-    DrawLine3D({0, 0, 0}, {0, len, 0}, GREEN);
-    DrawLine3D({0, 0, 0}, {0, 0, len}, BLUE);
-    DrawSphere({0, 0, 0}, 0.09f, YELLOW);
+static void DrawAxes(float len, Matrix transform) {
+    Vector3 origin = TransformPoint(Vector3{ 0.0f, 0.0f, 0.0f }, transform);
+    Vector3 posX   = TransformPoint(Vector3{  len, 0.0f, 0.0f }, transform);
+    Vector3 posY   = TransformPoint(Vector3{ 0.0f,  len, 0.0f }, transform);
+    Vector3 posZ   = TransformPoint(Vector3{ 0.0f, 0.0f,  len }, transform);
+
+    DrawLine3D(origin, posX, RED);   // Local X axis (Red)
+    DrawLine3D(origin, posY, GREEN); // Local Y axis (Green)
+    DrawLine3D(origin, posZ, BLUE);  // Local Z axis (Blue)
+    DrawSphere(origin, 0.09f, YELLOW);
+}
+
+static void DrawAxes(float len, Vector3 pos, Vector3 rot) {
+    Matrix transform = TRS(pos, rot, Vector3{ 1.0f, 1.0f, 1.0f });
+    DrawAxes(len, transform);
 }
 
 // Main loop
@@ -281,20 +292,15 @@ int main(void) {
     while (!WindowShouldClose()) {
         // Key listeners
 
-        camera.target = drone.position;
-        camera.position = (Vector3){ drone.position.x, drone.position.y + 5.0f, drone.position.z - 10.0f };
+        float dt = GetFrameTime();
 
-        float pitch = drone.rotation.x * DEG2RAD;
-        float yaw = drone.rotation.y * DEG2RAD;
-        float roll = drone.rotation.z * DEG2RAD;
+        float yawRad = drone.rotation.y * DEG2RAD;
+        float pitchRad = drone.rotation.x * DEG2RAD;
+        float rollRad = drone.rotation.z * DEG2RAD;
 
-        Vector3 forwardVec = GetForwardVector(yaw);
-        Vector3 rightVec = GetRightVector(yaw);
-        Vector3 upVec = GetUpVector(pitch, yaw);
-
-        float moveDistance = DRONE_SPEED * GetFrameTime();
-        float slantDistance = SLANT_SPEED * GetFrameTime();
-        float rotDistance = DRONE_ROT_SPEED * GetFrameTime();
+        Vector3 forwardVec = GetForwardVector(yawRad);
+        Vector3 rightVec = GetRightVector(yawRad);
+        Vector3 upVec = GetUpVector(pitchRad, yawRad, rollRad);
 
         Matrix transformPos = MatIdentity();
 
@@ -302,74 +308,50 @@ int main(void) {
 
             float forwardInput = 0.0f;
             float rightInput = 0.0f;
+            float climbInput = 0.0f;
+
             Vector3 moveInput = { 0.0f, 0.0f, 0.0f };
 
             // Movement on the x axis
 
-            if (IsKeyDown(KEY_W)) {
-                forwardInput += 1.0f;
-            }
-            else if (IsKeyDown(KEY_S)) {
-                forwardInput -= 1.0f;
-            }
+            if (IsKeyDown(KEY_W)) forwardInput += 1.0f;
+            if (IsKeyDown(KEY_S)) forwardInput -= 1.0f;
+            if (IsKeyDown(KEY_D)) rightInput += 1.0f;
+            if (IsKeyDown(KEY_A)) rightInput -= 1.0f;
+            if (IsKeyDown(KEY_R)) climbInput += 1.0f;
+            if (IsKeyDown(KEY_F)) climbInput -= 1.0f;
+            if (IsKeyDown(KEY_E)) drone.rotation.y -= DRONE_ROT_SPEED * dt;
+            if (IsKeyDown(KEY_Q)) drone.rotation.y += DRONE_ROT_SPEED * dt;
 
-            if (IsKeyDown(KEY_A)) {
-                rightInput += 1.0f;
-            }
-            else if (IsKeyDown(KEY_D)) {
-                rightInput -= 1.0f;
-            }
+            // Tilt with drone direction
+            float targetPitch = forwardInput * MAX_TILT;
+            float targetRoll = rightInput * MAX_TILT;
 
-            moveInput = Vector3Add(moveInput, ScaleVector(forwardVec, forwardInput));
-            moveInput = Vector3Add(moveInput, ScaleVector(rightVec, rightInput));
+            drone.rotation.x += (targetPitch - drone.rotation.x) * ANGULAR_DAMPENING * dt;
+            drone.rotation.z += (targetRoll - drone.rotation.z) * ANGULAR_DAMPENING * dt;
 
-            // Movement on the y axis
-            
-            if (IsKeyDown(KEY_R)) {
-                moveInput = Vector3Add(moveInput, upVec);
-            }
-            else if (IsKeyDown(KEY_F)) {
-                moveInput = Vector3Subtract(moveInput, upVec);
-            }
+            // Physics logic
+            Vector3 gravityForce = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
+            float hoverThrust = 9.81f * DRONE_MASS;
+            float currentThrust = hoverThrust + (climbInput * 12.0f);
 
-            // Normalize movement to prevent extra distance traveled on diagonals
+            Vector3 thrustForce = ScaleVector(upVec, currentThrust);
+            Vector3 dragForce = ScaleVector(drone.velocity, -LINEAR_DRAG);
 
-            if (Vector3Length(moveInput) > 0.0f) {
-                moveInput = Vector3Normalize(moveInput);
-            }
+            Vector3 netForce = Vector3Add(thrustForce, Vector3Add(gravityForce, dragForce));
 
-            // Drone rotation
-            
-            if (IsKeyDown(KEY_E)) {
-                drone.rotation.y -= rotDistance;
-            }
-            if (IsKeyDown(KEY_Q)) {
-                drone.rotation.y += rotDistance;
-            }
+            drone.acceleration = ScaleVector(netForce, 1.0f / DRONE_MASS);
+            drone.velocity = Vector3Add(drone.velocity, ScaleVector(drone.acceleration, dt));
+            drone.position = Vector3Add(drone.position, ScaleVector(drone.velocity, dt));
 
             // Propeller spin animation
 
-            for (int i = 0; i < 2; i++) {
-                drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED;
-            }
-            for (int i = 2; i < 4; i++) {
-                drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED;
-            }
-            
-            // Aggregate all inputs into a normalized vector
-            
-            Vector3 finalVelocity = ScaleVector(moveInput, moveDistance); 
-            drone.position = Vector3Add(drone.position, finalVelocity);
+            for (int i = 0; i < 2; i++) {drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED * dt;}
+            for (int i = 2; i < 4; i++) {drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED * dt;}
 
-            const float MAX_TILT = 20.0f; 
-            const float TILT_SMOOTHING = 8.0f;
-
-            float targetPitch = -forwardInput * MAX_TILT; 
-
-            float targetRoll = -rightInput * MAX_TILT; 
-
-            drone.rotation.x += (targetPitch - drone.rotation.x) * TILT_SMOOTHING * GetFrameTime();
-            drone.rotation.z += (targetRoll - drone.rotation.z) * TILT_SMOOTHING * GetFrameTime();
+            Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
+            camera.position = Vector3Add(drone.position, camOffset);
+            camera.target = drone.position;
         }
 
         // Toggle drone active
@@ -506,6 +488,10 @@ int main(void) {
 
             BeginMode3D(camera);
                 
+                
+                // Debugging for drone local orientation
+                DrawAxes(3.0f, drone.position, drone.rotation);
+
                 // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
                 DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
@@ -527,7 +513,6 @@ int main(void) {
                 }
 
                 DrawGrid(100, 1.0f);
-                DrawAxes(3.0f);
                 DrawSphere(lightPos, 0.5f, YELLOW);
                 
             EndMode3D();

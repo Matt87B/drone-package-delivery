@@ -34,5 +34,6 @@ typedef struct Drone {
 } Drone;
 
 void ToggleActive(Drone& drone);
+Drone InitDrone();
 
 #endif

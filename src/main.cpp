@@ -15,16 +15,17 @@
 #define SCREEN_HEIGHT 1080
 
 #define DRONE_SPEED 5.0f
-#define DRONE_ROT_SPEED 30.0f
 #define SLANT_OFFSET 10.0f
 #define SLANT_SPEED 2.0f
 #define ROTOR_SHAFT_SPEED 1500.0f
-#define MAX_TILT 50.0f 
+#define MAX_TILT 40.0f 
 
 #define DRONE_MASS 1.2f
 #define MAX_THRUST 35.0f
 #define LINEAR_DRAG 1.2f
-#define ANGULAR_DAMPENING 15.0f
+#define YAW_TORQUE 15.0f
+#define YAW_DRAG 5.0f
+#define ANGULAR_DAMPENING 10.0f
 #define CLIMB_THRUST_POWER 16.0f
 
 
@@ -120,9 +121,9 @@ Camera3D InitCamera() {
 
 static void DrawAxes(float len, Matrix transform) {
     Vector3 origin = TransformPoint(Vector3{ 0.0f, 0.0f, 0.0f }, transform);
-    Vector3 posX   = TransformPoint(Vector3{  len, 0.0f, 0.0f }, transform);
-    Vector3 posY   = TransformPoint(Vector3{ 0.0f,  len, 0.0f }, transform);
-    Vector3 posZ   = TransformPoint(Vector3{ 0.0f, 0.0f,  len }, transform);
+    Vector3 posX   = TransformPoint(Vector3{ len, 0.0f, 0.0f }, transform);
+    Vector3 posY   = TransformPoint(Vector3{ 0.0f, len, 0.0f }, transform);
+    Vector3 posZ   = TransformPoint(Vector3{ 0.0f, 0.0f, len }, transform);
 
     DrawLine3D(origin, posX, RED);   // Local X axis (Red)
     DrawLine3D(origin, posY, GREEN); // Local Y axis (Green)
@@ -153,7 +154,7 @@ int main(void) {
     Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
     Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
     Mesh landingGearMesh  = CreateCustomMesh(landingGearVertices, landingGearNormals, landingGearIndices);
-    Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);
+    Mesh rotorShaftMesh = GenMeshCube(0.2f, 0.4f, 0.2f);
     Mesh propRightMesh = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
     Mesh propLeftMesh = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
 
@@ -210,6 +211,7 @@ int main(void) {
             float forwardInput = 0.0f;
             float rightInput = 0.0f;
             float climbInput = 0.0f;
+            float yawInput = 0.0f;
 
             Vector3 moveInput = { 0.0f, 0.0f, 0.0f };
 
@@ -221,27 +223,31 @@ int main(void) {
             if (IsKeyDown(KEY_A)) rightInput -= 1.0f;
             if (IsKeyDown(KEY_R)) climbInput += 1.0f;
             if (IsKeyDown(KEY_F)) climbInput -= 1.0f;
-            if (IsKeyDown(KEY_E)) drone.rotation.y -= DRONE_ROT_SPEED * dt;
-            if (IsKeyDown(KEY_Q)) drone.rotation.y += DRONE_ROT_SPEED * dt;
+            if (IsKeyDown(KEY_Q)) yawInput += 1.0f;
+            if (IsKeyDown(KEY_E)) yawInput -= 1.0f;
+
+            // Yaw input logic
+            float appliedYawTorque = yawInput * YAW_TORQUE;
+            float yawDragForce = -drone.yawAngularVelocity * YAW_DRAG;
+            float yawAngularAcceleration = appliedYawTorque + yawDragForce;
+            drone.yawAngularVelocity += yawAngularAcceleration * dt;
+            drone.rotation.y += drone.yawAngularVelocity;
 
             // Tilt with drone direction
             float targetPitch = forwardInput * MAX_TILT;
             float targetRoll = rightInput * MAX_TILT;
-
             drone.rotation.x = SmoothStepLerp(drone.rotation.x, targetPitch, ANGULAR_DAMPENING * dt);
             drone.rotation.z = SmoothStepLerp(drone.rotation.z, targetRoll, ANGULAR_DAMPENING * dt);
-
-            // Physics logic
             float tiltCompensation = 1.0f / (cosf(pitchRad) * cosf(rollRad));
             tiltCompensation = Clamp(tiltCompensation, 1.0f, 1.5f);
 
+            // Drone hover and thrust logic
             Vector3 gravityForce = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
             float hoverThrust = 9.81f * DRONE_MASS * tiltCompensation;
             float currentThrust = hoverThrust + (climbInput * CLIMB_THRUST_POWER);
 
             Vector3 thrustForce = ScaleVector(upVec, currentThrust);
             Vector3 dragForce = ScaleVector(drone.velocity, -LINEAR_DRAG);
-
             Vector3 netForce = Vector3Add(thrustForce, Vector3Add(gravityForce, dragForce));
 
             drone.acceleration = ScaleVector(netForce, 1.0f / DRONE_MASS);
@@ -253,15 +259,8 @@ int main(void) {
             for (int i = 0; i < 2; i++) {drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED * dt;}
             for (int i = 2; i < 4; i++) {drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED * dt;}
 
-
-            // Camera Debug (Remove later)
-            if (IsKeyDown(KEY_UP)) camera.position.x += 1.0f;
-            if (IsKeyDown(KEY_DOWN)) camera.position.x -= 1.0f;
-            if (IsKeyDown(KEY_RIGHT)) camera.position.y += 1.0f;
-            if (IsKeyDown(KEY_LEFT)) camera.position.y -= 1.0f;
-
-            //Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
-            //camera.position = Vector3Add(drone.position, camOffset);
+            Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
+            camera.position = Vector3Add(drone.position, camOffset);
             camera.target = drone.position;
         }
 

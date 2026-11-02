@@ -18,6 +18,7 @@ typedef struct Drone {
     Vector3 acceleration;
     Vector3 rotation; // World rotation of drone
     Vector3 angularVelocity;
+    float yawAngularVelocity;
 
     bool isActive = false;
 

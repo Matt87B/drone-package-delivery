@@ -264,28 +264,38 @@ std::vector<Vector3> chassisVertices = {
     { 0.4f, 1.1f, 1.7f }, { -0.4f, 0.0f, 1.7f }, { 0.4f, 0.0f, 1.7f },
 
     { 0.6f, 1.1f, 1.5f }, { -0.6f, 1.1f, 1.5f }, { -0.4f, 1.1f, 1.7f },
-    { 0.6f, 1.1f, 1.5f }, { -0.4f, 1.1f, 1.7f }, { 0.4f, 1.1f, 1.7f }
+    { 0.6f, 1.1f, 1.5f }, { -0.4f, 1.1f, 1.7f }, { 0.4f, 1.1f, 1.7f },
 
     // Bottom
+
+    { 1.0f, 0.0f, 1.0f }, { -1.0f, 0.0f, 1.0f }, { -1.0f, 0.0f, -1.0f },
+    { 1.0f, 0.0f, 1.0f }, {-1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f, -1.0f },
+
+    { 0.6f, 0.0f, 1.5f }, { -0.6f, 0.0f, 1.5f }, { -0.6f, 0.0f, 1.0f },
+    { 0.6f, 0.0f, 1.5f }, { -0.6f, 0.0f, 1.0f }, { 0.6f, 0.0f, 1.0f },
+
+    { 0.4f, 0.0f, 1.7f }, { -0.4f, 0.0f, 1.7f }, { -0.6f, 0.0f, 1.5f },
+    { 0.4f, 0.0f, 1.7f }, { -0.6f, 0.0f, 1.5f }, { 0.6f, 0.0f, 1.5f }
 };
 std::vector<Vector3> armVertices = {
+
     // Back cap
-    { 0.0f, 0.25f, 0.0f }, { 0.25f, 0.0f, 0.0f }, { -0.25f, 0.0f, 0.0f },
-    { 0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { -0.25f, 0.0f, 0.0f },
+    { 0.0f, 0.25f, -0.5f }, { 0.25f, 0.0f, -0.5f }, { -0.25f, 0.0f, -0.5f },
+    { 0.25f, 0.0f, -0.5f }, { 0.0f, -0.25f, -0.5f }, { -0.25f, 0.0f, -0.5f },
 
     // Arm
 
-    { 0.0f, 0.25f, 0.0f }, { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, 0.0f },
-    { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, 0.5f }, { 0.25f, 0.0f, 0.0f },
+    { 0.0f, 0.25f, -0.5f }, { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, -0.5f },
+    { 0.0f, 0.25f, 0.5f }, { 0.25f, 0.0f, 0.5f }, { 0.25f, 0.0f, -0.5f },
 
-    { 0.0f, 0.25f, 0.0f }, { -0.25f, 0.0f, 0.0f }, { 0.0f, 0.25f, 0.5f },
-    { 0.0f, 0.25f, 0.5f }, { -0.25f, 0.0f, 0.0f }, { -0.25f, 0.0f, 0.5f },
+    { 0.0f, 0.25f, -0.5f }, { -0.25f, 0.0f, -0.5f }, { 0.0f, 0.25f, 0.5f },
+    { 0.0f, 0.25f, 0.5f }, { -0.25f, 0.0f, -0.5f }, { -0.25f, 0.0f, 0.5f },
 
-    { 0.25f, 0.0f, 0.0f }, { 0.25f, 0.0f, 0.5f }, { 0.0f, -0.25f, 0.0f },
-    { 0.0f, -0.25f, 0.0f }, { 0.25f, 0.0f, 0.5f }, {0.0f, -0.25f, 0.5f },
+    { 0.25f, 0.0f, -0.5f }, { 0.25f, 0.0f, 0.5f }, { 0.0f, -0.25f, -0.5f },
+    { 0.0f, -0.25f, -0.5f }, { 0.25f, 0.0f, 0.5f }, {0.0f, -0.25f, 0.5f },
 
-    { -0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.5f }, { -0.25f, 0.0f, 0.5f },
-    { -0.25f, 0.0f, 0.0f }, { 0.0f, -0.25f, 0.0f }, { 0.0f, -0.25f, 0.5f },
+    { -0.25f, 0.0f, -0.5f }, { 0.0f, -0.25f, 0.5f }, { -0.25f, 0.0f, 0.5f },
+    { -0.25f, 0.0f, -0.5f }, { 0.0f, -0.25f, -0.5f }, { 0.0f, -0.25f, 0.5f },
 
     // Wrist
 
@@ -431,7 +441,15 @@ std::vector<Vector3> landingGearVertices = {
     { -1.0f, 0.0f, -1.25f }, { -1.0f, 0.0f, -1.75f }, { -1.5f, 0.0f, -1.25f },
 
     { -1.5f, 0.0f, 1.25f }, { -1.0f, 0.0f, 1.75f }, { -1.0f, 0.0f, 1.25f },
-    { 1.0f, 0.0f, 1.75f }, { 1.5f, 0.0f, 1.25f }, { 1.0f, 0.0f, 1.25f }
+    { 1.0f, 0.0f, 1.75f }, { 1.5f, 0.0f, 1.25f }, { 1.0f, 0.0f, 1.25f },
+
+    { -1.0f, -0.4f, 1.5f }, { -1.25f, -0.4f, 1.25f }, { -1.0f, -0.5f, 1.25f },
+
+    { 1.25f, -0.4f, 1.25f }, { 1.0f, -0.4f, 1.5f }, { 1.0f, -0.5f, 1.25f },
+
+    { -1.0f, -0.5f, -1.25f }, { -1.25f, -0.4f, -1.25f }, { -1.0f, -0.4f, -1.5f },
+    
+    { 1.0f, -0.5f, -1.25f }, { 1.0f, -0.4f, -1.5f }, { 1.25f, -0.4f, -1.25f }
 };
 
 // Model texcoords and indices
@@ -453,13 +471,11 @@ std::vector<Vector3> propLeftNormals = CalculateNormals(propLeftVertices, propLe
 std::vector<unsigned short> landingGearIndices = GenerateHardSurfaceIndices(landingGearVertices.size());
 std::vector<Vector3> landingGearNormals = CalculateNormals(landingGearVertices, landingGearIndices);
 
-// Drone Parameters
-
 // Angles
 Vector3 droneRotation   = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 housingRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisRotation = Vector3{ 0.0f, 0.0f, 0.0f };
-Vector3 legRotation     = Vector3{ 0.0f, 0.0f, 0.0f };
+Vector3 landingGearRotation = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 armRotations[] = {
     Vector3{ 0.0f, 80.0f, 90.0f },
     Vector3{ 0.0f, 110.0f, 90.0f },
@@ -495,7 +511,7 @@ Vector3 propLeftRotations[] = {
 Vector3 dronePosition   = Vector3{ 0.0f, 3.0f, 0.0f };
 Vector3 housingPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 chassisPosition = Vector3{ 0.0f, 0.0f, -0.2f };
-Vector3 legPosition     = Vector3{ 0.0f, 0.0f, -0.5f };
+Vector3 landingGearPosition = Vector3{ 0.0f, 0.0f, 0.0f };
 Vector3 armPositions[]  = {
     Vector3{ 1.0f, 0.2f, 1.5f },
     Vector3{ 1.0f, 0.2f, -1.5f },
@@ -531,7 +547,7 @@ Vector3 propLeftPositions[] = {
 Vector3 housingScale    = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 chassisScale    = Vector3{ 0.9f, 0.5f, 1.2f };
 Vector3 armScale        = Vector3{ 1.0f, 1.0f, 1.0f };
-Vector3 legScale        = Vector3{ 1.0f, 1.0f, 1.0f };
+Vector3 landingGearScale = Vector3{ 0.9f, 0.5f, 1.0f };
 Vector3 motorHousingScale = Vector3{ 0.5f, 0.5f, 0.5f };
 Vector3 rotorShaftScale = Vector3{ 1.0f, 1.0f, 1.0f };
 Vector3 propScale       = Vector3{ 1.4f, 1.0f, 1.4f };

@@ -53,10 +53,10 @@ static Drone InitDrone() {
     drone.housing.scale = housingScale;
     drone.housing.color = housingColor;
 
-    drone.leg.position = legPosition;
-    drone.leg.rotation = legRotation;
-    drone.leg.scale = legScale;
-    drone.leg.color = WHITE;
+    drone.landingGear.position = landingGearPosition;
+    drone.landingGear.rotation = landingGearRotation;
+    drone.landingGear.scale = landingGearScale;
+    drone.landingGear.color = landingGearColor;
 
     for (DronePart arm : drone.arms) {
         arm.color = armColor;
@@ -305,13 +305,13 @@ int main(void) {
                 )
             );
         
-        Matrix legWorld =
+        Matrix landingGearWorld =
             ParentChild(
                 housingWorld,
                 TRS(
-                    drone.leg.position,
-                    drone.leg.rotation,
-                    drone.leg.scale
+                    drone.landingGear.position,
+                    drone.landingGear.rotation,
+                    drone.landingGear.scale
                 )
             );
 
@@ -402,23 +402,13 @@ int main(void) {
                 // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
                 DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
-                DrawModelWithWorldMatrix(landingGearModel, housingWorld, lighting, landingGearColor);
+                DrawModelWithWorldMatrix(landingGearModel, landingGearWorld, lighting, landingGearColor);
                 
-                for (Matrix armWorld : armWorlds) {
-                    DrawModelWithWorldMatrix(armModel, armWorld, lighting, armColor);
-                }
-                for (Matrix motorHousingWorld : motorHousingWorlds) {
-                    DrawModelWithWorldMatrix(motorHousingModel, motorHousingWorld, lighting, motorHousingColor);
-                }
-                for (Matrix rotorShaftWorld: rotorShaftWorlds) {
-                    DrawModelWithWorldMatrix(rotorShaftModel, rotorShaftWorld, lighting, rotorShaftColor);
-                }
-                for (Matrix propRightWorld: propRightWorlds) {
-                    DrawModelWithWorldMatrix(propRightModel, propRightWorld, lighting, propColor);
-                }
-                for (Matrix propLeftWorld: propLeftWorlds) {
-                    DrawModelWithWorldMatrix(propLeftModel, propLeftWorld, lighting, propColor);
-                }
+                for (Matrix armWorld : armWorlds) DrawModelWithWorldMatrix(armModel, armWorld, lighting, armColor);
+                for (Matrix motorHousingWorld : motorHousingWorlds) DrawModelWithWorldMatrix(motorHousingModel, motorHousingWorld, lighting, motorHousingColor);
+                for (Matrix rotorShaftWorld: rotorShaftWorlds) DrawModelWithWorldMatrix(rotorShaftModel, rotorShaftWorld, lighting, rotorShaftColor);
+                for (Matrix propRightWorld: propRightWorlds) DrawModelWithWorldMatrix(propRightModel, propRightWorld, lighting, propColor);
+                for (Matrix propLeftWorld: propLeftWorlds) DrawModelWithWorldMatrix(propLeftModel, propLeftWorld, lighting, propColor);
 
                 DrawGrid(100, 1.0f);
                 DrawSphere(lightPos, 0.5f, YELLOW);

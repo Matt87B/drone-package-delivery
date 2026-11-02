@@ -23,7 +23,7 @@ typedef struct Drone {
 
     DronePart chassis;
     DronePart housing;
-    DronePart leg;
+    DronePart landingGear;
     DronePart arms[4];
     DronePart motorHousings[4];
     DronePart rotorShafts[4];

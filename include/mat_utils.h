@@ -11,6 +11,7 @@ Matrix MatRotationY(float a);
 Matrix MatRotationZ(float a);
 Matrix MatMul(Matrix A, Matrix B);
 Matrix MatRotation(float rx, float ry, float rz);
+Matrix MatRotationAxis(Vector3 axis, float angleRad);
 Matrix Translate(Vector3 v);
 Matrix Scale(Vector3 v);
 Matrix Rotation(Vector3 v);

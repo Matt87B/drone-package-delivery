@@ -102,6 +102,10 @@ Matrix MatRotation(float rx, float ry, float rz) {
     return MatMul(matY, MatMul(matX, matZ));
 }
 
+Matrix MatRotationAxis(Vector3 axis, float angleRad) {
+    return MatrixRotate(Vector3Normalize(axis), angleRad);
+}
+
 // Wrappers for matrix operations
 Matrix Translate(Vector3 v) {
     return MatTranslation(v.x, v.y, v.z);

@@ -16,11 +16,13 @@ extern Color armColor;
 extern Color motorHousingColor;
 extern Color rotorShaftColor;
 extern Color propColor;
+extern Color landingGearColor;
 
 extern std::vector<Vector3> housingVertices;
 extern std::vector<Vector3> armVertices;
 extern std::vector<Vector3> chassisVertices;
 extern std::vector<Vector3> propRightVertices;
 extern std::vector<Vector3> propLeftVertices;
+extern std::vector<Vector3> landingGearVertices;
 
 #endif

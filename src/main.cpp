@@ -19,7 +19,7 @@
 #define SLANT_OFFSET 10.0f
 #define SLANT_SPEED 2.0f
 #define ROTOR_SHAFT_SPEED 1500.0f
-#define MAX_TILT 25.0f 
+#define MAX_TILT 50.0f 
 
 #define DRONE_MASS 1.2f
 #define MAX_THRUST 35.0f
@@ -43,6 +43,9 @@ std::vector<Vector3> propRightNormals = CalculateNormals(propRightVertices, prop
 
 std::vector<unsigned short> propLeftIndices = GenerateHardSurfaceIndices(propLeftVertices.size());
 std::vector<Vector3> propLeftNormals = CalculateNormals(propLeftVertices, propLeftIndices);
+
+std::vector<unsigned short> landingGearIndices = GenerateHardSurfaceIndices(landingGearVertices.size());
+std::vector<Vector3> landingGearNormals = CalculateNormals(landingGearVertices, landingGearIndices);
 
 // Drone Parameters
 
@@ -252,7 +255,7 @@ int main(void) {
     Mesh chassisMesh   = CreateCustomMesh(chassisVertices, chassisNormals, chassisIndices);
     Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
     Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
-    Mesh legMesh         = GenMeshCube(0.2f, 0.8f, 0.2f);
+    Mesh landingGearMesh  = CreateCustomMesh(landingGearVertices, landingGearNormals, landingGearIndices);
     Mesh rotorShaftMesh      = GenMeshCube(0.2f, 0.4f, 0.2f);
     Mesh propRightMesh = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
     Mesh propLeftMesh = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
@@ -260,7 +263,7 @@ int main(void) {
     // Models
     Model housingModel = LoadModelFromMesh(housingMesh);
     Model chassisModel = LoadModelFromMesh(chassisMesh);
-    Model legModel = LoadModelFromMesh(legMesh);
+    Model landingGearModel = LoadModelFromMesh(landingGearMesh);
     Model armModel     = LoadModelFromMesh(armMesh);
     Model motorHousingModel = LoadModelFromMesh(motorHousingMesh);
     Model rotorShaftModel    = LoadModelFromMesh(rotorShaftMesh);
@@ -272,7 +275,7 @@ int main(void) {
 
     housingModel.materials[0].shader   = lighting;
     chassisModel.materials[0].shader   = lighting;
-    legModel.materials[0].shader        = lighting;
+    landingGearModel.materials[0].shader = lighting;
     armModel.materials[0].shader       = lighting;
     motorHousingModel.materials[0].shader = lighting;
     rotorShaftModel.materials[0].shader   = lighting;
@@ -353,19 +356,22 @@ int main(void) {
             for (int i = 0; i < 2; i++) {drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED * dt;}
             for (int i = 2; i < 4; i++) {drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED * dt;}
 
-            Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
-            camera.position = Vector3Add(drone.position, camOffset);
+
+            // Camera Debug (Remove later)
+            if (IsKeyDown(KEY_UP)) camera.position.x += 1.0f;
+            if (IsKeyDown(KEY_DOWN)) camera.position.x -= 1.0f;
+            if (IsKeyDown(KEY_RIGHT)) camera.position.y += 1.0f;
+            if (IsKeyDown(KEY_LEFT)) camera.position.y -= 1.0f;
+
+            //Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
+            //camera.position = Vector3Add(drone.position, camOffset);
             camera.target = drone.position;
         }
 
         // Toggle drone active
-        if (IsKeyPressed(KEY_SPACE)) {
-            ToggleActive(drone);
-        }
+        if (IsKeyPressed(KEY_SPACE)) ToggleActive(drone);
 
-        if (IsKeyPressed(KEY_HOME)) {
-            drone = InitDrone();
-        }
+        if (IsKeyPressed(KEY_HOME)) drone = InitDrone();
 
         // Init shader uniforms
         SetShaderValue(lighting, lightPosLoc, &lightPos, SHADER_UNIFORM_VEC3);
@@ -499,7 +505,8 @@ int main(void) {
                 // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);
                 DrawModelWithWorldMatrix(chassisModel, chassisWorld, lighting, chassisColor);
-                DrawModelWithWorldMatrix(legModel, housingWorld, lighting, housingColor);
+                DrawModelWithWorldMatrix(landingGearModel, housingWorld, lighting, landingGearColor);
+                
                 for (Matrix armWorld : armWorlds) {
                     DrawModelWithWorldMatrix(armModel, armWorld, lighting, armColor);
                 }

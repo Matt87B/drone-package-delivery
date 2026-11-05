@@ -1,5 +1,6 @@
 #include "drone_utils.h"
 #include "resources.h"
+#include "raylib.h"
 
 void ToggleActive(Drone& drone) {
     drone.isActive = !drone.isActive;
@@ -9,7 +10,7 @@ void ToggleActive(Drone& drone) {
 Drone InitDrone() {
     Drone drone = { 0 };
     drone.position = dronePosition;
-    drone.rotation = droneRotation;
+    drone.orientation = QuaternionIdentity();
     
     drone.chassis.position = chassisPosition;
     drone.chassis.rotation = chassisRotation;

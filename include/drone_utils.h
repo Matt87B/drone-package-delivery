@@ -16,7 +16,8 @@ typedef struct Drone {
     Vector3 position; // World position of drone
     Vector3 velocity;
     Vector3 acceleration;
-    Vector3 rotation; // World rotation of drone
+
+    Quaternion orientation;
     Vector3 angularVelocity;
     float yawAngularVelocity;
 

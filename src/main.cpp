@@ -27,6 +27,10 @@
 #define YAW_DRAG 5.0f
 #define ANGULAR_DAMPENING 10.0f
 #define CLIMB_THRUST_POWER 16.0f
+#define PITCH_RATE 120.0f
+#define YAW_RATE 90.0f
+#define ROLL_RATE 120.0f
+#define CAM_SMOOTH_SPEED 8.0f
 
 
 // Lighting uniforms
@@ -123,76 +127,77 @@ int main(void) {
 
     // Game loop
     while (!WindowShouldClose()) {
-        // Key listeners
-
+        
         float dt = GetFrameTime();
-
-        float yawRad = drone.rotation.y * DEG2RAD;
-        float pitchRad = drone.rotation.x * DEG2RAD;
-        float rollRad = drone.rotation.z * DEG2RAD;
-
-        Vector3 forwardVec = GetForwardVector(yawRad);
-        Vector3 rightVec = GetRightVector(yawRad);
-        Vector3 upVec = GetUpVector(pitchRad, yawRad, rollRad);
-
-        Matrix transformPos = MatIdentity();
 
         if (drone.isActive) {
 
-            float forwardInput = 0.0f;
-            float rightInput = 0.0f;
-            float climbInput = 0.0f;
-            float yawInput = 0.0f;
+            float forwardInput  = 0.0f;
+            float rightInput    = 0.0f;
+            float climbInput    = 0.0f;
+            float yawInput      = 0.0f;
 
-            Vector3 moveInput = { 0.0f, 0.0f, 0.0f };
+            // Input polling
+            if (IsKeyDown(KEY_W)) forwardInput  += 1.0f;
+            if (IsKeyDown(KEY_S)) forwardInput  -= 1.0f;
+            if (IsKeyDown(KEY_D)) rightInput    += 1.0f;
+            if (IsKeyDown(KEY_A)) rightInput    -= 1.0f;
+            if (IsKeyDown(KEY_R)) climbInput    += 1.0f;
+            if (IsKeyDown(KEY_F)) climbInput    -= 1.0f;
+            if (IsKeyDown(KEY_Q)) yawInput      += 1.0f;
+            if (IsKeyDown(KEY_E)) yawInput      -= 1.0f;
 
-            // Movement on the x axis
+            // Rotation logic
+            float pitchAngleRad     = forwardInput * PITCH_RATE * DEG2RAD * dt;
+            float yawAngleRad       = yawInput * YAW_RATE * DEG2RAD * dt;
+            float rollAngleRad      = rightInput * ROLL_RATE * DEG2RAD * dt;
 
-            if (IsKeyDown(KEY_W)) forwardInput += 1.0f;
-            if (IsKeyDown(KEY_S)) forwardInput -= 1.0f;
-            if (IsKeyDown(KEY_D)) rightInput += 1.0f;
-            if (IsKeyDown(KEY_A)) rightInput -= 1.0f;
-            if (IsKeyDown(KEY_R)) climbInput += 1.0f;
-            if (IsKeyDown(KEY_F)) climbInput -= 1.0f;
-            if (IsKeyDown(KEY_Q)) yawInput += 1.0f;
-            if (IsKeyDown(KEY_E)) yawInput -= 1.0f;
 
-            // Yaw input logic
-            float appliedYawTorque = yawInput * YAW_TORQUE;
-            float yawDragForce = -drone.yawAngularVelocity * YAW_DRAG;
-            float yawAngularAcceleration = appliedYawTorque + yawDragForce;
-            drone.yawAngularVelocity += yawAngularAcceleration * dt;
-            drone.rotation.y += drone.yawAngularVelocity;
+            Quaternion qDeltaPitch  = QuaternionFromAxisAngle(Vector3{ 1.0f, 0.0f, 0.0f }, pitchAngleRad);
+            Quaternion qDeltaRoll   = QuaternionFromAxisAngle(Vector3{ 0.0f, 0.0f, 1.0f }, rollAngleRad);
+            Quaternion qDeltaYaw    = QuaternionFromAxisAngle(Vector3{ 0.0f, 1.0f, 0.0f }, yawAngleRad);
 
-            // Tilt with drone direction
-            float targetPitch = forwardInput * MAX_TILT;
-            float targetRoll = rightInput * MAX_TILT;
-            drone.rotation.x = SmoothStepLerp(drone.rotation.x, targetPitch, ANGULAR_DAMPENING * dt);
-            drone.rotation.z = SmoothStepLerp(drone.rotation.z, targetRoll, ANGULAR_DAMPENING * dt);
-            float tiltCompensation = 1.0f / (cosf(pitchRad) * cosf(rollRad));
-            tiltCompensation = Clamp(tiltCompensation, 1.0f, 1.5f);
+            Quaternion qDelta = QuaternionMultiply(qDeltaYaw, QuaternionMultiply(qDeltaPitch, qDeltaRoll));
+            
+            if (Vector3Length(Vector3{ drone.orientation.x, drone.orientation.y, drone.orientation.z }) == 0.0f && drone.orientation.w == 0.0f) {
+                drone.orientation = QuaternionIdentity();
+            }
 
-            // Drone hover and thrust logic
-            Vector3 gravityForce = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
-            float hoverThrust = 9.81f * DRONE_MASS * tiltCompensation;
-            float currentThrust = hoverThrust + (climbInput * CLIMB_THRUST_POWER);
+            drone.orientation = QuaternionNormalize(QuaternionMultiply(drone.orientation, qDelta));
 
-            Vector3 thrustForce = ScaleVector(upVec, currentThrust);
-            Vector3 dragForce = ScaleVector(drone.velocity, -LINEAR_DRAG);
-            Vector3 netForce = Vector3Add(thrustForce, Vector3Add(gravityForce, dragForce));
+            Matrix bodyRotation = QuaternionToMatrix(drone.orientation);
+            Vector3 upVec       = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);
 
-            drone.acceleration = ScaleVector(netForce, 1.0f / DRONE_MASS);
-            drone.velocity = Vector3Add(drone.velocity, ScaleVector(drone.acceleration, dt));
-            drone.position = Vector3Add(drone.position, ScaleVector(drone.velocity, dt));
+            // Thrust physics
+            //float totalTiltDeg = sqrtf(drone.rotation.x * drone.rotation.x + drone.rotation.z * drone.rotation.z);
+            //float tiltCompensation  = Clamp(1.0f / cosf(totalTiltDeg * DEG2RAD), 1.0f, 1.5f);
+            Vector3 gravityForce    = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
+
+            float hoverThrust       = 9.81f * DRONE_MASS; //* tiltCompensation;
+            Vector3 hoverForce      = ScaleVector(upVec, hoverThrust);
+            Vector3 climbForce      = ScaleVector(upVec, climbInput * CLIMB_THRUST_POWER);
+
+            Vector3 thrustForce     = Vector3Add(hoverForce, climbForce);
+            Vector3 dragForce       = ScaleVector(drone.velocity, -LINEAR_DRAG);
+            Vector3 netForce        = Vector3Add(thrustForce, Vector3Add(gravityForce, dragForce));
+
+            drone.acceleration  = ScaleVector(netForce, 1.0f / DRONE_MASS);
+            drone.velocity      = Vector3Add(drone.velocity, ScaleVector(drone.acceleration, dt));
+            drone.position      = Vector3Add(drone.position, ScaleVector(drone.velocity, dt));
+
 
             // Propeller spin animation
-
             for (int i = 0; i < 2; i++) {drone.rotorShafts[i].rotation.y -= ROTOR_SHAFT_SPEED * dt;}
             for (int i = 2; i < 4; i++) {drone.rotorShafts[i].rotation.y += ROTOR_SHAFT_SPEED * dt;}
 
-            Vector3 camOffset = Vector3Add(ScaleVector(forwardVec, -10.0f), Vector3{ 0.0f, 4.0f, 0.0f });
-            camera.position = Vector3Add(drone.position, camOffset);
+            // Camera follow logic
+            Vector3 localCamOffset = { 0.0f, 4.0f, -10.0f };
+            Vector3 rotatedOffset = Vector3RotateByQuaternion(localCamOffset, drone.orientation);
+            Vector3 targetCamPos = Vector3Add(drone.position, rotatedOffset);
+
+            camera.position = Vector3Lerp(camera.position, targetCamPos, Clamp(CAM_SMOOTH_SPEED * dt, 0.0f, 1.0f));
             camera.target = drone.position;
+            camera.up = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);
         }
 
         // Toggle drone active
@@ -219,7 +224,7 @@ int main(void) {
                 worldRoot,
                 TRS(
                     drone.position,
-                    drone.rotation,
+                    drone.orientation,
                     Vector3{ 1.0f, 1.0f, 1.0f } //Drone world's scale is always 1
                 )
             );
@@ -327,7 +332,7 @@ int main(void) {
                 
                 
                 // Debugging for drone local orientation
-                DrawAxes(3.0f, drone.position, drone.rotation);
+                DrawAxes(3.0f, drone.position, drone.chassis.rotation);
 
                 // Draw all 3D geometry
                 DrawModelWithWorldMatrix(housingModel, housingWorld, lighting, housingColor);

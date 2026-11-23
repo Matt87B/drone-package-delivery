@@ -15,10 +15,11 @@
 #define SCREEN_HEIGHT 1080
 
 #define DRONE_SPEED 5.0f
-#define SLANT_OFFSET 10.0f
-#define SLANT_SPEED 2.0f
 #define ROTOR_SHAFT_SPEED 1500.0f
-#define MAX_TILT 40.0f 
+#define TILT_SPEED 3.0f
+#define LEVEL_SPEED 3.0f
+#define MAX_ROLL_TILT 2.0f
+#define MAX_PITCH_TILT 2.0f
 
 #define DRONE_MASS 1.2f
 #define MAX_THRUST 35.0f
@@ -148,14 +149,30 @@ int main(void) {
             if (IsKeyDown(KEY_E)) yawInput      -= 1.0f;
 
             // Rotation logic
+
+            float targetPitch = forwardInput * MAX_PITCH_TILT;
+            float targetRoll  = rightInput   * MAX_ROLL_TILT;
+
+            float pitchSpeed = (forwardInput != 0.0f) ? TILT_SPEED : LEVEL_SPEED;
+            float rollSpeed  = (rightInput   != 0.0f) ? TILT_SPEED : LEVEL_SPEED;
+            
+            // Apply Rotation to static floats
+            drone.currentYaw += yawInput * YAW_RATE * dt;
+
+            drone.currentPitch = SmoothStepLerp(drone.currentPitch, targetPitch, pitchSpeed * dt);
+            drone.currentPitch = Clamp(drone.currentPitch, -MAX_PITCH_TILT, MAX_PITCH_TILT);
+
+            drone.currentRoll  = SmoothStepLerp(drone.currentRoll, targetRoll, rollSpeed * dt);
+            drone.currentRoll  = Clamp(drone.currentRoll, -MAX_ROLL_TILT, MAX_ROLL_TILT);
+
+
             float pitchAngleRad     = forwardInput * PITCH_RATE * DEG2RAD * dt;
             float yawAngleRad       = yawInput * YAW_RATE * DEG2RAD * dt;
             float rollAngleRad      = rightInput * ROLL_RATE * DEG2RAD * dt;
 
-
-            Quaternion qDeltaPitch  = QuaternionFromAxisAngle(Vector3{ 1.0f, 0.0f, 0.0f }, pitchAngleRad);
-            Quaternion qDeltaRoll   = QuaternionFromAxisAngle(Vector3{ 0.0f, 0.0f, 1.0f }, rollAngleRad);
-            Quaternion qDeltaYaw    = QuaternionFromAxisAngle(Vector3{ 0.0f, 1.0f, 0.0f }, yawAngleRad);
+            Quaternion qDeltaPitch  = QuaternionFromAxisAngle(Vector3{ 1.0f, 0.0f, 0.0f }, drone.currentPitch);
+            Quaternion qDeltaRoll   = QuaternionFromAxisAngle(Vector3{ 0.0f, 0.0f, 1.0f }, drone.currentRoll);
+            Quaternion qDeltaYaw    = QuaternionFromAxisAngle(Vector3{ 0.0f, 1.0f, 0.0f }, drone.currentYaw);
 
             Quaternion qDelta = QuaternionMultiply(qDeltaYaw, QuaternionMultiply(qDeltaPitch, qDeltaRoll));
             
@@ -168,12 +185,9 @@ int main(void) {
             Matrix bodyRotation = QuaternionToMatrix(drone.orientation);
             Vector3 upVec       = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);
 
-            // Thrust physics
-            //float totalTiltDeg = sqrtf(drone.rotation.x * drone.rotation.x + drone.rotation.z * drone.rotation.z);
-            //float tiltCompensation  = Clamp(1.0f / cosf(totalTiltDeg * DEG2RAD), 1.0f, 1.5f);
             Vector3 gravityForce    = { 0.0f, -9.81f * DRONE_MASS, 0.0f };
 
-            float hoverThrust       = 9.81f * DRONE_MASS; //* tiltCompensation;
+            float hoverThrust       = 9.81f * DRONE_MASS;
             Vector3 hoverForce      = ScaleVector(upVec, hoverThrust);
             Vector3 climbForce      = ScaleVector(upVec, climbInput * CLIMB_THRUST_POWER);
 

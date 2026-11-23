@@ -17,6 +17,10 @@ typedef struct Drone {
     Vector3 velocity;
     Vector3 acceleration;
 
+    float currentRoll    = 0.0f;
+    float currentPitch   = 0.0f;
+    float currentYaw     = 0.0f;
+
     Quaternion orientation;
     Vector3 angularVelocity;
     float yawAngularVelocity;

@@ -9,6 +9,7 @@
 #include "mesh_utils.h"
 #include "mat_utils.h"
 #include "drone_utils.h"
+#include "cam_utils.h"
 #include "resources.h"
 
 #define SCREEN_WIDTH 1920
@@ -26,19 +27,6 @@ float ambientStrength   = 0.4f;
 float specularStrength  = 0.50f;
 float shininess         = 200.0f;
 
-// Init functions
-
-// Initialize Camera3D
-Camera3D InitCamera() {
-    Camera3D camera     = { 0 };
-    camera.position     = (Vector3) { 0.0f, 10.0f, -10.0f };
-    camera.target       = (Vector3) { 0.0f, 0.0f, 0.0f };
-    camera.up           = (Vector3) { 0.0f, 1.0f, 0.0f };
-    camera.fovy         = 45.0f;
-    camera.projection   = CAMERA_PERSPECTIVE;
-
-    return camera;
-}
 
 static void DrawAxes(float len, Matrix transform) {
     Vector3 origin = TransformPoint(Vector3{ 0.0f, 0.0f, 0.0f }, transform);
@@ -64,8 +52,8 @@ int main(void) {
     InitWindow(800, 450, "raylib - drone model");
 
     // Objects
-    Camera3D camera = InitCamera();
-    Drone drone = InitDrone();
+    Camera3D camera = CamUtils::Init();
+    Drone drone     = DroneUtils::Init();
 
     SetTargetFPS(60);
 
@@ -138,19 +126,13 @@ int main(void) {
         DroneUtils::UpdateKinematics(drone, dt);
 
         // Camera follow logic
-        Vector3 localCamOffset = { 0.0f, 4.0f, -10.0f };
-        Vector3 rotatedOffset = Vector3RotateByQuaternion(localCamOffset, drone.orientation);
-        Vector3 targetCamPos = Vector3Add(drone.position, rotatedOffset);
-
-        camera.position = Vector3Lerp(camera.position, targetCamPos, Clamp(CAM_SMOOTH_SPEED * dt, 0.0f, 1.0f));
-        camera.target = drone.position;
-        camera.up = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);
+        CamUtils::UpdateCamera(camera, dt, drone);
         
 
         // Toggle drone active
         if (IsKeyPressed(KEY_SPACE)) DroneUtils::ToggleActive(drone);
 
-        if (IsKeyPressed(KEY_HOME)) drone = InitDrone();
+        if (IsKeyPressed(KEY_HOME)) drone = DroneUtils::Init();
 
         // Init shader uniforms
         SetShaderValue(lighting, lightPosLoc, &lightPos, SHADER_UNIFORM_VEC3);

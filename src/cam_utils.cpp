@@ -1,0 +1,29 @@
+#include "cam_utils.h"
+
+#include "raylib.h"
+#include "mat_utils.h"
+#include "raymath.h"
+#include "drone_utils.h"
+
+namespace CamUtils {
+    Camera3D Init() {
+        Camera3D camera     = { 0 };
+        camera.position     = (Vector3) { 0.0f, 10.0f, -10.0f };
+        camera.target       = (Vector3) { 0.0f, 0.0f, 0.0f };
+        camera.up           = (Vector3) { 0.0f, 1.0f, 0.0f };
+        camera.fovy         = 45.0f;
+        camera.projection   = CAMERA_PERSPECTIVE;
+
+        return camera;
+    }
+
+    void UpdateCamera(Camera3D& camera, float dt, Drone& drone) {
+        Vector3 localCamOffset = { 0.0f, 4.0f, -10.0f };
+        Vector3 rotatedOffset = Vector3RotateByQuaternion(localCamOffset, drone.orientation);
+        Vector3 targetCamPos = Vector3Add(drone.position, rotatedOffset);
+
+        camera.position = Vector3Lerp(camera.position, targetCamPos, Clamp(CAM_SMOOTH_SPEED * dt, 0.0f, 1.0f));
+        camera.target = drone.position;
+        camera.up = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);
+    }
+}

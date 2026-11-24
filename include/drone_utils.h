@@ -84,8 +84,8 @@ namespace DroneUtils {
     void UpdateKinematics(Drone& drone, float dt);
     void UpdateMotorMixer(Drone& drone, float pitchInput, float yawInput, float rollInput);
     void UpdatePropellers(Drone& drone, float dt);
+    Drone Init();
 }
 
-Drone InitDrone();
 
 #endif

@@ -173,3 +173,8 @@ float SmoothStepLerp(float current, float target, float speed) {
     t = t * t * (3.0f - 2.0f * t);
     return Lerp(current, target, t);
 }
+
+float SmoothDamp(float current, float target, float speed) {
+    float t = 1.0f - expf(-speed);
+    return current + (target - current) * t;
+}

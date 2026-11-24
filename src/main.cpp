@@ -17,9 +17,9 @@
 #define DRONE_SPEED 5.0f
 #define ROTOR_SHAFT_SPEED 1500.0f
 #define TILT_SPEED 3.0f
-#define LEVEL_SPEED 3.0f
-#define MAX_ROLL_TILT 2.0f
-#define MAX_PITCH_TILT 2.0f
+#define LEVEL_SPEED 5.0f
+#define MAX_ROLL_TILT 30.0f * DEG2RAD
+#define MAX_PITCH_TILT 30.0f * DEG2RAD
 
 #define DRONE_MASS 1.2f
 #define MAX_THRUST 35.0f
@@ -28,29 +28,27 @@
 #define YAW_DRAG 5.0f
 #define ANGULAR_DAMPENING 10.0f
 #define CLIMB_THRUST_POWER 16.0f
-#define PITCH_RATE 120.0f
-#define YAW_RATE 90.0f
-#define ROLL_RATE 120.0f
+#define YAW_RATE 90.0f * DEG2RAD
 #define CAM_SMOOTH_SPEED 8.0f
 
 
 // Lighting uniforms
 Vector3 lightPos = { 20.0f, 20.0f, 20.0f };
 
-float ambientStrength = 0.4f;
-float specularStrength = 0.50f;
-float shininess = 200.0f;
+float ambientStrength   = 0.4f;
+float specularStrength  = 0.50f;
+float shininess         = 200.0f;
 
 // Init functions
 
 // Initialize Camera3D
 Camera3D InitCamera() {
-    Camera3D camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 10.0f, -10.0f };
-    camera.target = (Vector3) { 0.0f, 0.0f, 0.0f };
-    camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
-    camera.fovy = 45.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
+    Camera3D camera     = { 0 };
+    camera.position     = (Vector3) { 0.0f, 10.0f, -10.0f };
+    camera.target       = (Vector3) { 0.0f, 0.0f, 0.0f };
+    camera.up           = (Vector3) { 0.0f, 1.0f, 0.0f };
+    camera.fovy         = 45.0f;
+    camera.projection   = CAMERA_PERSPECTIVE;
 
     return camera;
 }
@@ -85,46 +83,46 @@ int main(void) {
     SetTargetFPS(60);
 
     // Meshes
-    Mesh housingMesh   = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
-    Mesh chassisMesh   = CreateCustomMesh(chassisVertices, chassisNormals, chassisIndices);
-    Mesh armMesh       = CreateCustomMesh(armVertices, armNormals, armIndices);
-    Mesh motorHousingMesh = GenMeshCylinder(0.25f, 0.4f, 16);
-    Mesh landingGearMesh  = CreateCustomMesh(landingGearVertices, landingGearNormals, landingGearIndices);
-    Mesh rotorShaftMesh = GenMeshCube(0.2f, 0.4f, 0.2f);
-    Mesh propRightMesh = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
-    Mesh propLeftMesh = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
+    Mesh housingMesh        = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
+    Mesh chassisMesh        = CreateCustomMesh(chassisVertices, chassisNormals, chassisIndices);
+    Mesh armMesh            = CreateCustomMesh(armVertices, armNormals, armIndices);
+    Mesh motorHousingMesh   = GenMeshCylinder(0.25f, 0.4f, 16);
+    Mesh landingGearMesh    = CreateCustomMesh(landingGearVertices, landingGearNormals, landingGearIndices);
+    Mesh rotorShaftMesh     = GenMeshCube(0.2f, 0.4f, 0.2f);
+    Mesh propRightMesh      = CreateCustomMesh(propRightVertices, propRightNormals, propRightIndices);
+    Mesh propLeftMesh       = CreateCustomMesh(propLeftVertices, propLeftNormals, propLeftIndices);
 
     // Models
-    Model housingModel = LoadModelFromMesh(housingMesh);
-    Model chassisModel = LoadModelFromMesh(chassisMesh);
-    Model landingGearModel = LoadModelFromMesh(landingGearMesh);
-    Model armModel     = LoadModelFromMesh(armMesh);
+    Model housingModel      = LoadModelFromMesh(housingMesh);
+    Model chassisModel      = LoadModelFromMesh(chassisMesh);
+    Model landingGearModel  = LoadModelFromMesh(landingGearMesh);
+    Model armModel          = LoadModelFromMesh(armMesh);
     Model motorHousingModel = LoadModelFromMesh(motorHousingMesh);
-    Model rotorShaftModel    = LoadModelFromMesh(rotorShaftMesh);
-    Model propRightModel = LoadModelFromMesh(propRightMesh);
-    Model propLeftModel = LoadModelFromMesh(propLeftMesh);
+    Model rotorShaftModel   = LoadModelFromMesh(rotorShaftMesh);
+    Model propRightModel    = LoadModelFromMesh(propRightMesh);
+    Model propLeftModel     = LoadModelFromMesh(propLeftMesh);
 
     // Shader
     Shader lighting = LoadShaderFromMemory(lightingVs, lightingFs);
 
-    housingModel.materials[0].shader   = lighting;
-    chassisModel.materials[0].shader   = lighting;
-    landingGearModel.materials[0].shader = lighting;
-    armModel.materials[0].shader       = lighting;
-    motorHousingModel.materials[0].shader = lighting;
-    rotorShaftModel.materials[0].shader   = lighting;
-    propRightModel.materials[0].shader = lighting;
-    propLeftModel.materials[0].shader = lighting;
+    housingModel.materials[0].shader        = lighting;
+    chassisModel.materials[0].shader        = lighting;
+    landingGearModel.materials[0].shader    = lighting;
+    armModel.materials[0].shader            = lighting;
+    motorHousingModel.materials[0].shader   = lighting;
+    rotorShaftModel.materials[0].shader     = lighting;
+    propRightModel.materials[0].shader      = lighting;
+    propLeftModel.materials[0].shader       = lighting;
 
     int baseColorLoc = GetShaderLocation(lighting, "baseColor");
 
     // Lighting
 
-    int lightPosLoc = GetShaderLocation(lighting, "lightPos");
-    int viewPosLoc = GetShaderLocation(lighting, "viewPos");
-    int ambientLoc = GetShaderLocation(lighting, "ambientStrength");
-    int specularLoc = GetShaderLocation(lighting, "specularStrength");
-    int shininessLoc = GetShaderLocation(lighting, "shininess");
+    int lightPosLoc     = GetShaderLocation(lighting, "lightPos");
+    int viewPosLoc      = GetShaderLocation(lighting, "viewPos");
+    int ambientLoc      = GetShaderLocation(lighting, "ambientStrength");
+    int specularLoc     = GetShaderLocation(lighting, "specularStrength");
+    int shininessLoc    = GetShaderLocation(lighting, "shininess");
 
     // Game loop
     while (!WindowShouldClose()) {
@@ -159,28 +157,21 @@ int main(void) {
             // Apply Rotation to static floats
             drone.currentYaw += yawInput * YAW_RATE * dt;
 
-            drone.currentPitch = SmoothStepLerp(drone.currentPitch, targetPitch, pitchSpeed * dt);
+            drone.currentPitch = SmoothDamp(drone.currentPitch, targetPitch, pitchSpeed * dt);
             drone.currentPitch = Clamp(drone.currentPitch, -MAX_PITCH_TILT, MAX_PITCH_TILT);
 
-            drone.currentRoll  = SmoothStepLerp(drone.currentRoll, targetRoll, rollSpeed * dt);
+            drone.currentRoll  = SmoothDamp(drone.currentRoll, targetRoll, rollSpeed * dt);
             drone.currentRoll  = Clamp(drone.currentRoll, -MAX_ROLL_TILT, MAX_ROLL_TILT);
 
-
-            float pitchAngleRad     = forwardInput * PITCH_RATE * DEG2RAD * dt;
+            float pitchAngleRad     = forwardInput * DEG2RAD * dt;
             float yawAngleRad       = yawInput * YAW_RATE * DEG2RAD * dt;
-            float rollAngleRad      = rightInput * ROLL_RATE * DEG2RAD * dt;
+            float rollAngleRad      = rightInput * DEG2RAD * dt;
 
             Quaternion qDeltaPitch  = QuaternionFromAxisAngle(Vector3{ 1.0f, 0.0f, 0.0f }, drone.currentPitch);
             Quaternion qDeltaRoll   = QuaternionFromAxisAngle(Vector3{ 0.0f, 0.0f, 1.0f }, drone.currentRoll);
             Quaternion qDeltaYaw    = QuaternionFromAxisAngle(Vector3{ 0.0f, 1.0f, 0.0f }, drone.currentYaw);
 
-            Quaternion qDelta = QuaternionMultiply(qDeltaYaw, QuaternionMultiply(qDeltaPitch, qDeltaRoll));
-            
-            if (Vector3Length(Vector3{ drone.orientation.x, drone.orientation.y, drone.orientation.z }) == 0.0f && drone.orientation.w == 0.0f) {
-                drone.orientation = QuaternionIdentity();
-            }
-
-            drone.orientation = QuaternionNormalize(QuaternionMultiply(drone.orientation, qDelta));
+            drone.orientation = QuaternionMultiply(qDeltaYaw, QuaternionMultiply(qDeltaPitch, qDeltaRoll));
 
             Matrix bodyRotation = QuaternionToMatrix(drone.orientation);
             Vector3 upVec       = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, drone.orientation);

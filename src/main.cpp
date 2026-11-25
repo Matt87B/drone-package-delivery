@@ -12,8 +12,8 @@
 #include "cam_utils.h"
 #include "resources.h"
 
-#define SCREEN_WIDTH 1920
-#define SCREEN_HEIGHT 1080
+#define VIEWPORT_WIDTH 1920
+#define VIEWPORT_HEIGHT 1080
 
 #define ROTOR_SHAFT_SPEED 1500.0f
 
@@ -49,11 +49,12 @@ static void DrawAxes(float len, Vector3 pos, Vector3 rot) {
 int main(void) {
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(800, 450, "raylib - drone model");
+    InitWindow(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, "raylib - drone model");
 
     // Objects
-    Camera3D camera = CamUtils::Init();
-    Drone drone     = DroneUtils::Init();
+    Camera3D camera         = CamUtils::Init();
+    Camera3D orthoCamera    = CamUtils::InitOrtho();
+    Drone drone             = DroneUtils::Init();
 
     SetTargetFPS(60);
 
@@ -126,7 +127,8 @@ int main(void) {
         DroneUtils::UpdateKinematics(drone, dt);
 
         // Camera follow logic
-        CamUtils::UpdateCamera(camera, dt, drone);
+        CamUtils::UpdateCamera(camera, drone, dt);
+        CamUtils::UpdateOrthoCamera(orthoCamera, drone, dt);
         
 
         // Toggle drone active
@@ -254,12 +256,20 @@ int main(void) {
             );
         }
 
+        float feedSize = 256.0f;
+        RenderTexture2D orthoFeed = LoadRenderTexture(feedSize, feedSize);
+        BeginTextureMode(orthoFeed);
+            ClearBackground(DARKGRAY);
+
+            BeginMode3D(orthoCamera);
+                DrawGrid(100, 1.0f);
+            EndMode3D();
+        EndTextureMode();
+
         BeginDrawing();
             ClearBackground(RAYWHITE);
 
             BeginMode3D(camera);
-                
-                
                 // Debugging for drone local orientation
                 DrawAxes(3.0f, drone.position, drone.chassis.rotation);
 
@@ -278,6 +288,20 @@ int main(void) {
                 DrawSphere(lightPos, 0.5f, YELLOW);
                 
             EndMode3D();
+
+            float padding = 20.0f;
+            Vector2 screenPos = {
+                (float)GetScreenWidth() - feedSize - padding,
+                (float)GetScreenHeight() - feedSize - padding
+            };
+            Rectangle sourceRec = { 0.0f, 0.0f, (float)orthoFeed.texture.width, (float)-orthoFeed.texture.height };
+            DrawTextureRec(orthoFeed.texture, sourceRec, screenPos, WHITE);
+
+            DrawRectangleLines((int)screenPos.x, (int)screenPos.y, feedSize, feedSize, GREEN);
+            DrawLine((int)screenPos.x + feedSize/2 - 10, (int)screenPos.y + feedSize/2,
+                    (int)screenPos.x + feedSize/2 + 10, (int)screenPos.y + feedSize/2, GREEN);
+            DrawLine((int)screenPos.x + feedSize/2, (int)screenPos.y + feedSize/2 - 10,
+                    (int)screenPos.x + feedSize/2, (int)screenPos.y + feedSize/2 + 10, GREEN);
 
             // Draw all 2D geometry here
             DrawFPS(10, 40);

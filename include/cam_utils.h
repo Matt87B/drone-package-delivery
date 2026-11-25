@@ -8,7 +8,9 @@ inline constexpr float CAM_SMOOTH_SPEED = 8.0f;
 
 namespace CamUtils {
     Camera3D Init();
-    void UpdateCamera(Camera3D& camera, float dt, Drone& drone);
+    Camera3D InitOrtho();
+    void UpdateCamera(Camera3D& camera, Drone& drone, float dt);
+    void UpdateOrthoCamera(Camera3D& camera, Drone& drone, float dt);
 }
 
 #endif

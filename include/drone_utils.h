@@ -15,10 +15,10 @@ inline constexpr float MAX_ROLL_TILT    = 30.0f;
 
 inline constexpr float DRONE_MASS       = 1.2f;
 inline constexpr float GRAVITY          = 9.81f;
-inline constexpr float HORIZONTAL_DRAG  = 0.15f;
-inline constexpr float VERTICAL_DRAG    = 0.15f;
+inline constexpr float HORIZONTAL_DRAG  = 0.25f;
+inline constexpr float VERTICAL_DRAG    = 0.7f;
 
-inline constexpr float THROTTLE_RATE            = 0.4f;
+inline constexpr float THROTTLE_RATE            = 4.0f;
 inline constexpr float MAX_ROTOR_SPEED          = 1500.0f;
 inline constexpr float HOVER_ROTOR_SPEED        = 750.0f;
 inline constexpr float MOTOR_THRUST_COEFFICIENT = (DRONE_MASS * GRAVITY) / (4.0f * HOVER_ROTOR_SPEED * HOVER_ROTOR_SPEED);

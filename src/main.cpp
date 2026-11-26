@@ -10,6 +10,7 @@
 #include "mat_utils.h"
 #include "drone_utils.h"
 #include "cam_utils.h"
+#include "collision_manager.h"
 #include "resources.h"
 
 #define VIEWPORT_WIDTH 1920
@@ -38,7 +39,7 @@ int main(void) {
     Camera3D orthoCamera    = CamUtils::InitOrtho();
     Drone drone             = DroneUtils::Init();
 
-    SetTargetFPS(60);
+    SetTargetFPS(120);
 
     // Meshes
     Mesh housingMesh        = CreateCustomMesh(housingVertices, housingNormals, housingIndices);
@@ -238,8 +239,9 @@ int main(void) {
             );
         }
 
-        float feedSize = 256.0f;
+        float feedSize = 512.0f;
         RenderTexture2D orthoFeed = LoadRenderTexture(feedSize, feedSize);
+        
         BeginTextureMode(orthoFeed);
             ClearBackground(DARKGRAY);
 

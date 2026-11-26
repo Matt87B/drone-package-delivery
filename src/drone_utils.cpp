@@ -7,11 +7,9 @@ namespace DroneUtils {
     void ToggleActive(Drone& drone) {
         if (drone.isActive) {
             drone.isActive = false;
-            drone.throttle = 0.0f;
         }
         else {
             drone.isActive = true;
-            drone.throttle = HOVER_THROTTLE;
         }
     }
 
@@ -47,7 +45,19 @@ namespace DroneUtils {
     }
 
     void UpdateThrottle(Drone& drone, float throttleInput, float dt) {
-        drone.throttle += throttleInput * THROTTLE_RATE * dt;
+        
+        if (!drone.isActive) {
+            drone.throttle = SmoothDamp(drone.throttle, 0.0f, THROTTLE_RATE * dt);
+        }
+        else {
+            if (throttleInput != 0.0f && drone.isActive) {
+                drone.throttle += throttleInput * THROTTLE_RATE * dt;
+            }
+            else {
+                drone.throttle = SmoothStepLerp(drone.throttle, HOVER_THROTTLE, THROTTLE_RATE * dt);
+            }
+        }
+        
         drone.throttle = Clamp(drone.throttle, 0.0f, 1.0f);
     }
 

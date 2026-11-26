@@ -27,24 +27,6 @@ float ambientStrength   = 0.4f;
 float specularStrength  = 0.50f;
 float shininess         = 200.0f;
 
-
-static void DrawAxes(float len, Matrix transform) {
-    Vector3 origin = TransformPoint(Vector3{ 0.0f, 0.0f, 0.0f }, transform);
-    Vector3 posX   = TransformPoint(Vector3{ len, 0.0f, 0.0f }, transform);
-    Vector3 posY   = TransformPoint(Vector3{ 0.0f, len, 0.0f }, transform);
-    Vector3 posZ   = TransformPoint(Vector3{ 0.0f, 0.0f, len }, transform);
-
-    DrawLine3D(origin, posX, RED);   // Local X axis (Red)
-    DrawLine3D(origin, posY, GREEN); // Local Y axis (Green)
-    DrawLine3D(origin, posZ, BLUE);  // Local Z axis (Blue)
-    DrawSphere(origin, 0.09f, YELLOW);
-}
-
-static void DrawAxes(float len, Vector3 pos, Vector3 rot) {
-    Matrix transform = TRS(pos, rot, Vector3{ 1.0f, 1.0f, 1.0f });
-    DrawAxes(len, transform);
-}
-
 // Main loop
 int main(void) {
 

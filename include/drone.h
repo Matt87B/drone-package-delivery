@@ -6,7 +6,7 @@
 #include "game_object.h"
 #include "mat_utils.h"
 
-inline constexpr float TILT_SPEED       = 3.0f;
+inline constexpr float TILT_SPEED       = 10.0f;
 inline constexpr float LEVEL_SPEED      = 5.0f;
 
 inline constexpr float YAW_RATE         = 90.0f;
@@ -16,16 +16,16 @@ inline constexpr float MAX_ROLL_TILT    = 30.0f;
 
 inline constexpr float DRONE_MASS       = 1.2f;
 inline constexpr float GRAVITY          = 9.81f;
-inline constexpr float HORIZONTAL_DRAG  = 0.25f;
-inline constexpr float VERTICAL_DRAG    = 0.35f;
+inline constexpr float HORIZONTAL_DRAG  = 0.15f;
+inline constexpr float VERTICAL_DRAG    = 0.25f;
 
-inline constexpr float THROTTLE_RATE            = 1.0f;
-inline constexpr float MAX_ROTOR_SPEED          = 1500.0f;
-inline constexpr float HOVER_ROTOR_SPEED        = 750.0f;
+inline constexpr float THROTTLE_RATE            = 5.0f;
+inline constexpr float MAX_ROTOR_SPEED          = 4500.0f;
+inline constexpr float HOVER_ROTOR_SPEED        = 2000.0f;
 inline constexpr float MOTOR_THRUST_COEFFICIENT = (DRONE_MASS * GRAVITY) / (4.0f * HOVER_ROTOR_SPEED * HOVER_ROTOR_SPEED);
 inline constexpr float HOVER_THROTTLE           = sqrtf((DRONE_MASS * 9.81f) / (4.0f * MOTOR_THRUST_COEFFICIENT)) / MAX_ROTOR_SPEED;
 
-inline constexpr float MOTOR_RESPONSE   = 20.0f;
+inline constexpr float MOTOR_RESPONSE   = 10.0f;
 inline constexpr float PITCH_MIX        = 0.20f;
 inline constexpr float YAW_MIX          = 0.15f;
 inline constexpr float ROLL_MIX         = 0.20f;

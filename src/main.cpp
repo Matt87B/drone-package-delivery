@@ -40,7 +40,7 @@ int main(void) {
 
     Drone drone(Vector3{ 0.0f, 5.0f, 0.0f });
 
-    CollisionManager collisionManager(0.8f, Vector3{ 1.2f, 0.4f, 1.2f });
+    CollisionManager collisionManager(0.8f, Vector3{ 10.0f, 3.0f, 10.0f });
     
     std::vector<BoundingBox> worldObstacles = {
         BoundingBox{Vector3{ 4.0f, 0.0f, 4.0f }, Vector3{ 7.0f, 8.0f, 7.0f }},
@@ -102,8 +102,9 @@ int main(void) {
     int specularLoc     = GetShaderLocation(lighting, "specularStrength");
     int shininessLoc    = GetShaderLocation(lighting, "shininess");
 
-    float feedSize = 512.0f;
-    RenderTexture2D orthoFeed = LoadRenderTexture(feedSize, feedSize);
+    float feedWidth = VIEWPORT_WIDTH/6;
+    float feedHeight = VIEWPORT_HEIGHT/4;
+    RenderTexture2D orthoFeed = LoadRenderTexture(feedWidth, feedHeight);
 
     // Game loop
     while (!WindowShouldClose()) {
@@ -177,17 +178,17 @@ int main(void) {
 
             float padding = 20.0f;
             Vector2 screenPos = {
-                (float)GetScreenWidth() - feedSize - padding,
-                (float)GetScreenHeight() - feedSize - padding
+                (float)GetScreenWidth() - feedWidth - padding,
+                (float)GetScreenHeight() - feedHeight - padding
             };
             Rectangle sourceRec = { 0.0f, 0.0f, (float)orthoFeed.texture.width, (float)-orthoFeed.texture.height };
             DrawTextureRec(orthoFeed.texture, sourceRec, screenPos, WHITE);
 
-            DrawRectangleLines((int)screenPos.x, (int)screenPos.y, feedSize, feedSize, GREEN);
-            DrawLine((int)screenPos.x + feedSize/2 - 10, (int)screenPos.y + feedSize/2,
-                    (int)screenPos.x + feedSize/2 + 10, (int)screenPos.y + feedSize/2, GREEN);
-            DrawLine((int)screenPos.x + feedSize/2, (int)screenPos.y + feedSize/2 - 10,
-                    (int)screenPos.x + feedSize/2, (int)screenPos.y + feedSize/2 + 10, GREEN);
+            DrawRectangleLines((int)screenPos.x, (int)screenPos.y, feedWidth, feedHeight, GREEN);
+            DrawLine((int)screenPos.x + feedWidth/2 - 10, (int)screenPos.y + feedHeight/2,
+                    (int)screenPos.x + feedWidth/2 + 10, (int)screenPos.y + feedHeight/2, GREEN);
+            DrawLine((int)screenPos.x + feedWidth/2, (int)screenPos.y + feedHeight/2 - 10,
+                    (int)screenPos.x + feedWidth/2, (int)screenPos.y + feedHeight/2 + 10, GREEN);
 
             // Draw all 2D geometry here
             DrawFPS(10, 40);

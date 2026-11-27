@@ -87,10 +87,10 @@ void Drone::UpdateRotation(float pitchInput, float yawInput, float rollInput, fl
     float pitchSpeed    = (pitchInput != 0.0f) ? TILT_SPEED : LEVEL_SPEED;
     float rollSpeed     = (rollInput != 0.0f) ? TILT_SPEED : LEVEL_SPEED;
 
-    currentPitch    = SmoothDamp(currentPitch, targetPitch, pitchSpeed * dt);
+    currentPitch    = SmoothStepLerp(currentPitch, targetPitch, pitchSpeed * dt);
     currentPitch    = Clamp(currentPitch, -MAX_PITCH_TILT, MAX_PITCH_TILT);
 
-    currentRoll     = SmoothDamp(currentRoll, targetRoll, rollSpeed * dt);
+    currentRoll     = SmoothStepLerp(currentRoll, targetRoll, rollSpeed * dt);
     currentRoll     = Clamp(currentRoll, -MAX_ROLL_TILT, MAX_ROLL_TILT);
 
     Quaternion qPitch   = QuaternionFromAxisAngle(Vector3{ 1.0f, 0.0f, 0.0f }, currentPitch);
@@ -103,14 +103,14 @@ void Drone::UpdateRotation(float pitchInput, float yawInput, float rollInput, fl
 
 void Drone::UpdateThrottle(float throttleInput, float dt) {
     if (!isActive) {
-            throttle = SmoothDamp(throttle, 0.0f, THROTTLE_RATE * dt);
+            throttle = Lerp(throttle, 0.0f, MOTOR_RESPONSE * dt);
     }
     else {
         if (throttleInput != 0.0f && isActive) {
-            throttle += throttleInput * THROTTLE_RATE * dt;
+            throttle = Lerp(throttle, throttleInput, THROTTLE_RATE * dt);
         }
         else {
-            throttle = SmoothStepLerp(throttle, HOVER_THROTTLE, THROTTLE_RATE * dt);
+            throttle = Lerp(throttle, HOVER_THROTTLE, THROTTLE_RATE * dt);
         }
     }
     throttle = Clamp(throttle, 0.0f, 1.0f);
@@ -150,7 +150,7 @@ void Drone::UpdateMotorMixer(float pitchInput, float yawInput, float rollInput) 
 
 void Drone::UpdatePropellers(float dt) {
     for (int i = 0; i < 4; i++) {
-        rotorShafts[i].angularVelocity  = Lerp(rotorShafts[i].angularVelocity, rotorShafts[i].targetVelocity, MOTOR_RESPONSE * dt);
+        rotorShafts[i].angularVelocity  = SmoothDamp(rotorShafts[i].angularVelocity, rotorShafts[i].targetVelocity, MOTOR_RESPONSE * dt);
         rotorShafts[i].rotationAngle    += rotorShafts[i].spinDirection * rotorShafts[i].angularVelocity * dt;
         rotorShafts[i].rotation.y       = rotorShafts[i].rotationAngle;
     }

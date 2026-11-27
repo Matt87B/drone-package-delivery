@@ -496,14 +496,14 @@ Vector3 rotorShaftRotations[] = {
 };
 Vector3 propRightRotations[] = {
     Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ 90.0f, 0.0f, 0.0f },
     Vector3{ 90.0f, 0.0f, 180.0f },
+    Vector3{ 90.0f, 0.0f, 0.0f },
     Vector3{ 90.0f, 0.0f, 180.0f }
 };
 Vector3 propLeftRotations[] = {
     Vector3{ 90.0f, 0.0f, 0.0f },
-    Vector3{ 90.0f, 0.0f, 0.0f },
     Vector3{ 90.0f, 0.0f, 180.0f },
+    Vector3{ 90.0f, 0.0f, 0.0f },
     Vector3{ 90.0f, 0.0f, 180.0f }
 };
 
@@ -531,16 +531,16 @@ Vector3 rotorShaftPositions[] = {
     Vector3{ 0.0f, 0.0f, 0.0f }
 };
 Vector3 propRightPositions[] = {
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f }
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f }
 };
 Vector3 propLeftPositions[] = {
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f },
-    Vector3{ 0.0f, 0.0f, 0.0f }
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f },
+    Vector3{ 0.0f, -0.1f, 0.0f }
 };
 
 // Scales

@@ -2,7 +2,7 @@
 #define CAM_UTILS_H
 
 #include "raylib.h"
-#include "drone_utils.h"
+#include "drone.h"
 
 inline constexpr float CAM_SMOOTH_SPEED = 8.0f;
 

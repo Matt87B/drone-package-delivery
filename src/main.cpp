@@ -40,7 +40,7 @@ int main(void) {
 
     Drone drone(Vector3{ 0.0f, 5.0f, 0.0f });
 
-    CollisionManager collisionManager(0.8f, Vector3{ 10.0f, 3.0f, 10.0f });
+    CollisionManager collisionManager(2.0f, Vector3{ 1.0f, 1.0f, 1.0f }); // <-------- FIX THIS TO BE A BOX
     
     std::vector<BoundingBox> worldObstacles = {
         BoundingBox{Vector3{ 4.0f, 0.0f, 4.0f }, Vector3{ 7.0f, 8.0f, 7.0f }},
@@ -116,10 +116,10 @@ int main(void) {
         float yawInput      = 0.0f;
 
         // Input polling
-        if (IsKeyDown(KEY_W)) pitchInput  += 1.0f;
-        if (IsKeyDown(KEY_S)) pitchInput  -= 1.0f;
-        if (IsKeyDown(KEY_D)) rollInput    += 1.0f;
-        if (IsKeyDown(KEY_A)) rollInput    -= 1.0f;
+        if (IsKeyDown(KEY_W)) pitchInput    += 1.0f;
+        if (IsKeyDown(KEY_S)) pitchInput    -= 1.0f;
+        if (IsKeyDown(KEY_D)) rollInput     += 1.0f;
+        if (IsKeyDown(KEY_A)) rollInput     -= 1.0f;
         if (IsKeyDown(KEY_R)) throttleInput += 1.0f;
         if (IsKeyDown(KEY_F)) throttleInput -= 1.0f;
         if (IsKeyDown(KEY_Q)) yawInput      += 1.0f;
@@ -166,7 +166,7 @@ int main(void) {
                 // Draw all 3D geometry
                 drone.Draw(droneModels, lighting);
                 DrawGrid(100, 1.0f);
-                DrawBoundingBox(drone.GetBoundingBox(), GREEN);
+                DrawBoundingBox(collisionManager.GetAABB(drone.GetPositionRef()), GREEN); // <------------------- FIX THIS DRONE BOX (Check collision horizontal)
 
                 for (const auto& box : worldObstacles) { DrawBoundingBox(box, RED); }
                 
